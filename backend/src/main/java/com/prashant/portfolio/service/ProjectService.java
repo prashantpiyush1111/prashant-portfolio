@@ -2,19 +2,14 @@ package com.prashant.portfolio.service;
 
 import com.prashant.portfolio.entity.Project;
 import com.prashant.portfolio.repository.ProjectRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
 public class ProjectService {
     private final ProjectRepository projectRepository;
-
-    public ProjectService(ProjectRepository projectRepository) {
-        this.projectRepository = projectRepository;
-    }
-
-    public List<Project> getAllProjects() {
-        return projectRepository.findAll();
-    }
+    public ProjectService(ProjectRepository projectRepository) { this.projectRepository = projectRepository; }
+    public List<Project> getAllProjects() { return projectRepository.findAll(); }
+    public Project getProject(Long id) { return projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Project not found: " + id)); }
 }
