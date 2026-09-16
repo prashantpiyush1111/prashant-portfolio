@@ -3,6 +3,8 @@ name: Portfolio Verification
 on:
   push:
     branches: [portfolio-complete]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
