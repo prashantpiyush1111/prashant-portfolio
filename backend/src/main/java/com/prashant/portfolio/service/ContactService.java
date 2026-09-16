@@ -48,12 +48,16 @@ public class ContactService {
 
     private void sendConfirmation(ContactRequestDto request) {
         if (request.getEmail() == null || request.getEmail().isBlank()) return;
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(request.getEmail());
-        email.setSubject("Thanks for reaching out to Prashant Maurya");
-        email.setText("Hi " + request.getName() + ",\n\n"
-                + "Thanks for reaching out through my portfolio. I have received your message and will get back to you soon.\n\n"
-                + "Regards,\nPrashant Maurya");
-        mailSender.send(email);
+        try {
+            SimpleMailMessage email = new SimpleMailMessage();
+            email.setTo(request.getEmail());
+            email.setSubject("Thanks for reaching out to Prashant Maurya");
+            email.setText("Hi " + request.getName() + ",\n\n"
+                    + "Thanks for reaching out through my portfolio. I have received your message and will get back to you soon.\n\n"
+                    + "Regards,\nPrashant Maurya");
+            mailSender.send(email);
+        } catch (Exception ignored) {
+            // Contact message is already saved; a mail failure must not fail the API request.
+        }
     }
 }
