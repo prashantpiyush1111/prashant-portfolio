@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
-import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight } from 'lucide-react';
+import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight, Monitor } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import api from './api/axios';
 import { useTheme } from './context/ThemeContext';
@@ -28,7 +28,7 @@ const FALLBACK_PROJECTS = [
 ];
 
 export default function App() {
-  const { dark, toggleTheme } = useTheme();
+  const { dark, theme: themeMode, toggleTheme, cycleTheme } = useTheme();
   const [menu, setMenu] = useState(false), [scrolled, setScrolled] = useState(false), [progress, setProgress] = useState(0);
   const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [blog, setBlog] = useState(null);
   const [typed, setTyped] = useState(''), [loading, setLoading] = useState(true), [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' }), [sending, setSending] = useState(false);
@@ -60,7 +60,7 @@ export default function App() {
   const updateField = (field, value) => setForm((current) => ({ ...current, [field]: value }));
   const submit = async (event) => {
     event.preventDefault();
-    if (form.website.trim()) { toast.success('Message sent successfully'); return; }
+    if (form.website.trim()) return;
     if (!form.name.trim() || !form.subject.trim() || !form.message.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { toast.error('Please enter valid details.'); return; }
     setSending(true);
     try { await api.post('/contact', form); toast.success('Message sent successfully'); setForm({ name: '', email: '', subject: '', message: '', website: '' }); }
@@ -73,7 +73,7 @@ export default function App() {
   return <div className={`min-h-screen overflow-x-hidden ${theme.page}`}>
     <Toaster position="top-right" />
     <div className="fixed left-0 top-0 z-[100] h-1 bg-gradient-to-r from-cyan-400 to-purple-500" style={{ width: `${progress}%` }} />
-    <Header nav={NAV} menu={menu} setMenu={setMenu} go={go} toggleTheme={toggleTheme} dark={dark} theme={theme} Sun={Sun} Moon={Moon} Menu={Menu} X={X} />
+    <Header nav={NAV} menu={menu} setMenu={setMenu} go={go} theme={theme} scrolled={scrolled} themeMode={themeMode} cycleTheme={cycleTheme} dark={dark} Sun={Sun} Moon={Moon} Monitor={Monitor} Menu={Menu} X={X} />
     <main>
       <Hero typed={typed} go={go} FaGithub={FaGithub} FaLinkedin={FaLinkedin} Mail={Mail} ArrowUpRight={ArrowUpRight} theme={theme} />
       <About SectionTitle={SectionTitle} Card={Card} />
