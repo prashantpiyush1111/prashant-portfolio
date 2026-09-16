@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 
 function ProjectCard({ project, FaGithub, ExternalLink }) {
@@ -12,5 +12,14 @@ function ProjectCard({ project, FaGithub, ExternalLink }) {
 
 export default function Projects({ SectionTitle, loading, projects, fallbackProjects, FaGithub, ExternalLink }) {
   const items = projects.length ? projects : fallbackProjects;
-  return <section id="projects" className="mx-auto max-w-6xl px-6 py-24"><SectionTitle eyebrow="Projects" title="Things I've built." text="Selected work across Java, Spring Boot, React, databases and AI." /><div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3">{loading ? Array.from({ length: 3 }).map((_, i) => <div key={i} className="aspect-[16/13] animate-pulse rounded-3xl bg-zinc-200 dark:bg-white/5" />) : items.map((project, i) => <ProjectCard project={project} key={project.id || i} FaGithub={FaGithub} ExternalLink={ExternalLink} />)}</div></section>;
+  const categories = useMemo(() => ['All', ...new Set(items.flatMap((project) => (project.techStack || '').split(',').map((value) => value.trim()).filter(Boolean)).map((value) => value.split('/')[0]))], [items]);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('All');
+  const filtered = items.filter((project) => {
+    const stack = (project.techStack || '').toLowerCase();
+    const matchesFilter = filter === 'All' || stack.includes(filter.toLowerCase());
+    const haystack = `${project.title} ${project.description} ${project.techStack}`.toLowerCase();
+    return matchesFilter && haystack.includes(query.toLowerCase());
+  });
+  return <section id="projects" className="mx-auto max-w-6xl px-6 py-24"><SectionTitle eyebrow="Projects" title="Things I've built." text="Selected work across Java, Spring Boot, React, databases and AI." /><div className="mb-8 flex flex-col gap-4"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search projects or technology…" aria-label="Search projects" className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 outline-none focus:border-cyan-400 dark:border-white/10 dark:bg-white/5" /><div className="flex flex-wrap gap-2">{categories.map((category) => <button key={category} onClick={() => setFilter(category)} className={`rounded-full border px-3 py-1.5 text-sm transition ${filter === category ? 'border-cyan-400 bg-cyan-400/10 text-cyan-500' : 'border-zinc-200 bg-white text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300'}`}>{category}</button>)}</div></div><div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3">{loading ? Array.from({ length: 3 }).map((_, i) => <div key={i} className="aspect-[16/13] animate-pulse rounded-3xl bg-zinc-200 dark:bg-white/5" />) : filtered.length ? filtered.map((project, i) => <ProjectCard project={project} key={project.id || i} FaGithub={FaGithub} ExternalLink={ExternalLink} />) : <div className="rounded-3xl border border-dashed border-zinc-300 p-10 text-center text-zinc-500 dark:border-white/10 md:col-span-3">No projects match this filter.</div>}</div></section>;
 }
