@@ -3,7 +3,7 @@ import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight, Monitor } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import api from './api/axios';
 import { useTheme } from './context/ThemeContext';
 import Header from './components/Header';
@@ -96,12 +96,11 @@ function HomePage() {
 function AppRoutes() {
   const location = useLocation();
   useEffect(() => {
-    api.post('/analytics/pageview', { path: `${location.pathname}${location.search}` }).catch(() => {});
-  }, [location.pathname, location.search]);
+    api.post('/analytics/pageview', { path: location.pathname }).catch(() => {});
+  }, [location.pathname]);
   return <Routes><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<ProjectDetails />} /><Route path="/blog/:id" element={<BlogDetails />} /><Route path="*" element={<HomePage />} /></Routes>;
 }
 
 export default function App() {
-  const navigate = useNavigate();
-  return <AppRoutes navigate={navigate} />;
+  return <AppRoutes />;
 }
