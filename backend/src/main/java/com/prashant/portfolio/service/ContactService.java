@@ -34,15 +34,16 @@ public class ContactService {
     }
 
     private void sendAdminNotification(ContactRequestDto request) {
-        if (mailTo.isBlank()) return;
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(mailTo);
-        email.setReplyTo(request.getEmail());
-        email.setSubject("Portfolio Contact: " + request.getSubject());
-        email.setText("Name: " + request.getName() + "\n"
-                + "Email: " + request.getEmail() + "\n\n"
-                + request.getMessage());
-        mailSender.send(email);
+        if (mailTo != null && !mailTo.isBlank()) {
+            SimpleMailMessage email = new SimpleMailMessage();
+            email.setTo(mailTo);
+            email.setReplyTo(request.getEmail());
+            email.setSubject("Portfolio Contact: " + request.getSubject());
+            email.setText("Name: " + request.getName() + "\n"
+                    + "Email: " + request.getEmail() + "\n\n"
+                    + request.getMessage());
+            mailSender.send(email);
+        }
     }
 
     private void sendConfirmation(ContactRequestDto request) {
