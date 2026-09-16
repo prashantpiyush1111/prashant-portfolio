@@ -5,11 +5,14 @@ import com.prashant.portfolio.repository.ContactMessageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,17 +41,20 @@ class ContactServiceTest {
         assertDoesNotThrow(() -> service.save(request()));
 
         verify(repository).save(any());
-        verify(mailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        assertEquals("test@example.com", captor.getValue().getTo()[0]);
+        assertEquals("Thanks for reaching out to Prashant Maurya", captor.getValue().getSubject());
     }
 
     @Test
     void confirmationMailFailureDoesNotFailSave() {
         doThrow(new RuntimeException("SMTP unavailable"))
-                .when(mailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
+                .when(mailSender).send(any(SimpleMailMessage.class));
 
         assertDoesNotThrow(() -> service.save(request()));
 
         verify(repository).save(any());
-        verify(mailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
+        verify(mailSender).send(any(SimpleMailMessage.class));
     }
 }
