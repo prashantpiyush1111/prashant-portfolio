@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Command, Download, Mail, Moon, Sun, UserRound, BriefcaseBusiness } from 'lucide-react';
+import { Command, Download, Mail, Moon, UserRound, BriefcaseBusiness } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const ACTIONS = [
