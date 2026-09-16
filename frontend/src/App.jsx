@@ -1,74 +1,77 @@
-import { useEffect, useState } from 'react'
-import { ArrowUpRight, Github, ExternalLink } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Github, Linkedin, Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight } from 'lucide-react';
+import { Toaster, toast } from 'react-hot-toast';
+import api from './api/axios';
+import './index.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const fallbackProjects = [
+  { title:'AI-Driven Sales Forecasting', description:'AI-powered sales forecasting platform with business intelligence dashboards and predictive insights.', techStack:'Java, Spring Boot, MySQL, React, Python, FastAPI', githubUrl:'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', liveDemoUrl:'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', imageUrl:'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80' },
+  { title:'RAG Educational Assistant', description:'Educational assistant that retrieves relevant knowledge and generates grounded answers from learning resources.', techStack:'Java, Spring Boot, React, Python, RAG, Qdrant', githubUrl:'https://github.com/prashantpiyush1111/rag-educational-system', liveDemoUrl:'https://github.com/prashantpiyush1111/rag-educational-system', imageUrl:'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80' },
+  { title:'Task Management System', description:'Jira-style task management system with assignments, role-based permissions, deadlines, and collaboration.', techStack:'Java, Spring Boot, MySQL, React, JWT', githubUrl:'https://github.com/prashantpiyush1111', liveDemoUrl:'https://github.com/prashantpiyush1111', imageUrl:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80' }
+];
 
-function App() {
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+const nav = ['home','about','skills','projects','blog','contact'];
+const skillFallback = [
+  ['Java','Backend',90],['Spring Boot','Backend',85],['Spring Security','Backend',75],['JWT','Backend',75],['Hibernate/JPA','Backend',80],
+  ['MySQL','Database',85],['React.js','Frontend',75],['Git','Tools',85],['Maven','Tools',80],['Postman','Tools',80]
+];
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/projects`)
-      .then((response) => {
-        if (!response.ok) throw new Error('Unable to load projects')
-        return response.json()
-      })
-      .then(setProjects)
-      .catch(() => setError('Projects could not be loaded right now.'))
-      .finally(() => setLoading(false))
-  }, [])
-
-  return (
-    <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
-      <section id="projects" className="mx-auto max-w-6xl">
-        <div className="mb-12 flex items-end justify-between gap-6">
-          <div>
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-400">Selected Work</p>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Projects</h1>
-            <p className="mt-4 max-w-2xl text-slate-400">A selection of full-stack and AI-powered products I have built.</p>
-          </div>
-          <ArrowUpRight className="hidden h-8 w-8 text-slate-700 sm:block" />
-        </div>
-
-        {loading && <p className="text-slate-400">Loading projects...</p>}
-        {error && <p className="rounded-xl border border-red-900 bg-red-950/40 p-4 text-red-300">{error}</p>}
-
-        {!loading && !error && (
-          <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
-              <article key={project.id} className="group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70 shadow-2xl shadow-black/10 transition duration-300 hover:-translate-y-1 hover:border-slate-700">
-                <div className="aspect-[16/10] overflow-hidden bg-slate-800">
-                  <img src={project.imageUrl} alt={project.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                </div>
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold">{project.title}</h2>
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-400">{project.description}</p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {project.techStack.split(',').map((tech) => (
-                      <span key={tech} className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
-                        {tech.trim()}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-6 flex gap-3">
-                    <a href={project.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200">
-                      <Github className="h-4 w-4" /> GitHub
-                    </a>
-                    {project.liveDemoUrl && project.liveDemoUrl !== '#' && (
-                      <a href={project.liveDemoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
-                        <ExternalLink className="h-4 w-4" /> Live Demo
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-    </main>
-  )
+function SectionTitle({ eyebrow, title, text }) {
+  return <div className="mx-auto mb-12 max-w-2xl text-center"><p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-cyan-400">{eyebrow}</p><h2 className="text-3xl font-extrabold sm:text-4xl">{title}</h2>{text && <p className="mt-4 text-zinc-400">{text}</p>}</div>;
 }
 
-export default App
+function ProjectCard({ project }) {
+  const [tilt, setTilt] = useState({x:0,y:0});
+  const handleMove = (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setTilt({ x: ((e.clientX-r.left)/r.width-.5)*6, y: ((e.clientY-r.top)/r.height-.5)*-6 });
+  };
+  const reset = () => setTilt({x:0,y:0});
+  const tags = (project.techStack || '').split(',').map(v=>v.trim()).filter(Boolean);
+  return <motion.article onMouseMove={handleMove} onMouseLeave={reset} whileInView={{opacity:1,y:0}} initial={{opacity:0,y:30}} viewport={{once:true}} transition={{duration:.5}}
+    style={{transform:`perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`}}
+    className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.045] shadow-2xl shadow-black/20 backdrop-blur-xl transition-colors hover:border-cyan-400/30">
+    <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-cyan-400/10 to-purple-500/10"><img src={project.imageUrl} alt={project.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" onError={(e)=>{e.currentTarget.style.display='none'}}/><div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent"/><div className="absolute inset-x-4 bottom-4 flex translate-y-3 gap-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100"><a href={project.liveDemoUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-black"><ExternalLink size={16}/>Live Demo</a><a href={project.githubUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/20 bg-black/60 px-4 py-3 text-sm font-bold text-white backdrop-blur"><Github size={16}/>GitHub</a></div></div>
+    <div className="p-6"><h3 className="text-xl font-bold">{project.title}</h3><p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-400">{project.description}</p><div className="mt-5 flex flex-wrap gap-2">{tags.map(tag=><span key={tag} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">{tag}</span>)}</div></div>
+  </motion.article>;
+}
+
+export default function App(){
+  const [dark,setDark]=useState(()=>localStorage.getItem('theme')!=='light');
+  const [menu,setMenu]=useState(false); const [scrolled,setScrolled]=useState(false); const [progress,setProgress]=useState(0);
+  const [projects,setProjects]=useState([]); const [skills,setSkills]=useState([]); const [blogs,setBlogs]=useState([]); const [selectedBlog,setSelectedBlog]=useState(null); const [form,setForm]=useState({name:'',email:'',subject:'',message:''}); const [sending,setSending]=useState(false); const [typed,setTyped]=useState('');
+  const phrases=['Java Full Stack Developer','Spring Boot Developer','React Developer'];
+
+  useEffect(()=>{document.documentElement.classList.toggle('dark',dark); localStorage.setItem('theme',dark?'dark':'light')},[dark]);
+  useEffect(()=>{ const f=async()=>{ try{const [p,s,b]=await Promise.all([api.get('/projects'),api.get('/skills'),api.get('/blogs')]);setProjects(p.data);setSkills(s.data);setBlogs(b.data);}catch{setProjects(fallbackProjects);setSkills(skillFallback.map(([name,category,proficiencyPercent],i)=>({id:i,name,category,proficiencyPercent})));setBlogs([])}}; f(); },[]);
+  useEffect(()=>{ let i=0,pos=0,del=false; const timer=setInterval(()=>{const word=phrases[i]; if(!del){setTyped(word.slice(0,pos+1));pos++;if(pos===word.length){del=true}}else{setTyped(word.slice(0,pos-1));pos--;if(pos===0){del=false;i=(i+1)%phrases.length}}},90); return()=>clearInterval(timer)},[]);
+  useEffect(()=>{const onScroll=()=>{setScrolled(window.scrollY>20); const h=document.documentElement.scrollHeight-window.innerHeight;setProgress(h?window.scrollY/h*100:0)};window.addEventListener('scroll',onScroll);return()=>window.removeEventListener('scroll',onScroll)},[]);
+
+  const grouped=useMemo(()=>skills.reduce((a,s)=>(a[s.category]=[...(a[s.category]||[]),s],a),{}),[skills]);
+  const go=id=>{document.getElementById(id)?.scrollIntoView({behavior:'smooth'});setMenu(false)};
+  const submit=async e=>{e.preventDefault();if(!form.name||!form.message||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)){toast.error('Please enter valid details.');return}setSending(true);try{await api.post('/contact',form);toast.success('Message sent successfully');setForm({name:'',email:'',subject:'',message:''})}catch(err){toast.error(err?.response?.data?.message||'Could not send message')}finally{setSending(false)}};
+
+  return <div className="min-h-screen bg-[#0a0a0f] text-[#f5f5f5] selection:bg-cyan-400/30 dark:bg-[#0a0a0f]">
+    <Toaster position="top-right"/>
+    <div className="fixed left-0 top-0 z-[60] h-1 bg-gradient-to-r from-cyan-400 to-purple-500" style={{width:`${progress}%`}}/>
+    <header className={`fixed inset-x-0 top-0 z-50 transition ${scrolled?'border-b border-white/10 bg-[#0a0a0f]/75 backdrop-blur-xl':'bg-transparent'}`}><div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4"><button onClick={()=>go('home')} className="text-lg font-extrabold">PM<span className="text-cyan-400">.</span></button><nav className="hidden items-center gap-7 md:flex">{nav.map(n=><button key={n} onClick={()=>go(n)} className="text-sm text-zinc-400 transition hover:text-white">{n[0].toUpperCase()+n.slice(1)}</button>)}<button onClick={()=>setDark(v=>!v)} aria-label="Toggle theme" className="rounded-xl border border-white/10 p-2">{dark?<Sun size={17}/>:<Moon size={17}/>}</button></nav><button className="md:hidden" onClick={()=>setMenu(v=>!v)}>{menu?<X/>:<Menu/>}</button></div>{menu&&<div className="border-t border-white/10 bg-[#0a0a0f]/95 px-6 py-4 md:hidden">{nav.map(n=><button key={n} onClick={()=>go(n)} className="block w-full py-3 text-left text-zinc-300">{n[0].toUpperCase()+n.slice(1)}</button>)}</div>}</header>
+
+    <main>
+      <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-20"><div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl animate-pulse"/><div className="absolute -right-24 bottom-20 h-80 w-80 rounded-full bg-purple-500/20 blur-3xl animate-pulse"/><motion.div initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} transition={{duration:.8}} className="relative max-w-4xl text-center"><p className="mb-5 font-mono text-sm text-cyan-400">&lt;hello world /&gt;</p><h1 className="text-5xl font-black tracking-tight sm:text-7xl">Hi, I'm <span className="bg-gradient-to-r from-cyan-300 to-purple-400 bg-clip-text text-transparent">Prashant Maurya</span></h1><p className="mt-6 text-xl text-zinc-300 sm:text-2xl"><span className="text-white">{typed}</span><span className="ml-1 animate-pulse text-cyan-400">|</span></p><p className="mx-auto mt-6 max-w-2xl text-zinc-400">B.Tech CSE student building reliable Java backends, polished React experiences, and AI-powered applications.</p><div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row"><button onClick={()=>go('projects')} className="rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 px-6 py-3 font-bold text-black">View Projects <ArrowUpRight className="ml-1 inline" size={17}/></button><a href="/resume.pdf" download className="rounded-2xl border border-white/10 bg-white/5 px-6 py-3 font-bold">Download Resume</a></div><div className="mt-8 flex justify-center gap-3"><a href="https://github.com/prashantpiyush1111" target="_blank" rel="noreferrer" className="rounded-xl border border-white/10 p-3 hover:border-cyan-400/50"><Github size={18}/></a><a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="rounded-xl border border-white/10 p-3 hover:border-cyan-400/50"><Linkedin size={18}/></a><a href="mailto:prashantpiyush1111@gmail.com" className="rounded-xl border border-white/10 p-3 hover:border-cyan-400/50"><Mail size={18}/></a></div></motion.div></section>
+
+      <section id="about" className="mx-auto max-w-6xl px-6 py-24"><SectionTitle eyebrow="About" title="Building with purpose." text="A developer focused on clean architecture, backend engineering, and end-to-end product thinking."/><div className="grid gap-8 md:grid-cols-[1.2fr_.8fr]"><motion.div whileInView={{opacity:1,y:0}} initial={{opacity:0,y:25}} viewport={{once:true}} className="rounded-3xl border border-white/10 bg-white/[0.03] p-8"><p className="text-lg leading-8 text-zinc-300">I'm Prashant Maurya, a B.Tech Computer Science and Engineering student at IEC College of Engineering and Technology, Greater Noida. I enjoy turning ideas into maintainable full-stack systems with Java, Spring Boot, MySQL and React.</p></motion.div><motion.div whileInView={{opacity:1,y:0}} initial={{opacity:0,y:25}} viewport={{once:true}} className="rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-400/10 to-purple-500/10 p-8"><p className="text-sm uppercase tracking-[0.2em] text-cyan-400">Education</p><h3 className="mt-4 text-xl font-bold">B.Tech CSE</h3><p className="mt-2 text-zinc-300">IEC College of Engineering and Technology</p><p className="text-zinc-500">Greater Noida · 2023–2027 · AKTU</p></motion.div></div></section>
+
+      <section id="skills" className="border-y border-white/5 bg-white/[0.015] px-6 py-24"><div className="mx-auto max-w-6xl"><SectionTitle eyebrow="Skills" title="Tools I build with."/><div className="grid gap-6 md:grid-cols-2">{Object.entries(grouped).map(([category,list])=><motion.div key={category} whileInView={{opacity:1,y:0}} initial={{opacity:0,y:25}} viewport={{once:true}} className="rounded-3xl border border-white/10 bg-white/[0.03] p-7"><h3 className="mb-6 text-lg font-bold">{category}</h3><div className="space-y-5">{list.map(skill=><div key={skill.id||skill.name}><div className="mb-2 flex justify-between text-sm"><span>{skill.name}</span><span className="text-zinc-500">{skill.proficiencyPercent}%</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><motion.div initial={{width:0}} whileInView={{width:`${skill.proficiencyPercent}%`}} viewport={{once:true}} transition={{duration:1}} className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-purple-500"/></div></div>)}</div></motion.div>)}</div></div></section>
+
+      <section id="projects" className="mx-auto max-w-6xl px-6 py-24"><SectionTitle eyebrow="Projects" title="Things I've built." text="Selected projects across Java, Spring Boot, React and AI."/><div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3">{(projects.length?projects:fallbackProjects).map((p,i)=><ProjectCard project={p} key={p.id||i}/>)}</div></section>
+
+      <section id="blog" className="border-y border-white/5 bg-white/[0.015] px-6 py-24"><div className="mx-auto max-w-6xl"><SectionTitle eyebrow="Blog" title="Notes from the build process."/><div className="grid gap-6 md:grid-cols-2">{blogs.length?blogs.map(blog=><button key={blog.id} onClick={()=>setSelectedBlog(blog)} className="text-left rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition hover:-translate-y-1 hover:border-cyan-400/30"><img src={blog.thumbnailUrl} alt="" loading="lazy" className="mb-5 aspect-video w-full rounded-2xl object-cover"/><p className="text-xs uppercase tracking-[0.2em] text-cyan-400">{blog.publishedDate}</p><h3 className="mt-2 text-xl font-bold">{blog.title}</h3><p className="mt-3 text-sm leading-6 text-zinc-400">{blog.summary}</p></button>):<div className="md:col-span-2 rounded-3xl border border-dashed border-white/10 p-10 text-center text-zinc-500">Blog posts will appear here from the backend.</div>}</div></div></section>
+
+      <section id="contact" className="mx-auto max-w-6xl px-6 py-24"><SectionTitle eyebrow="Contact" title="Let's build something useful." text="Have a role, project or collaboration in mind? Send a message."/><form onSubmit={submit} className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8"><div className="grid gap-5 sm:grid-cols-2">{[['name','Name'],['email','Email'],['subject','Subject']].map(([key,label])=><label key={key} className="text-sm text-zinc-400 sm:last:col-span-2">{label}<input value={form[key]} onChange={e=>setForm({...form,[key]:e.target.value})} type={key==='email'?'email':'text'} className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-400/50" required={key!=='subject'}/></label>)}<label className="text-sm text-zinc-400 sm:col-span-2">Message<textarea value={form.message} onChange={e=>setForm({...form,message:e.target.value})} rows="6" className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-400/50" required/></label></div><button disabled={sending} className="mt-5 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-purple-500 px-5 py-3 font-bold text-black disabled:opacity-60">{sending?'Sending...':'Send Message'}</button></form></section>
+    </main>
+
+    <footer className="border-t border-white/10 px-6 py-10"><div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between"><p>© 2026 Prashant Maurya</p><p>Built with React & Spring Boot</p><div className="flex gap-4"><a href="https://github.com/prashantpiyush1111" target="_blank" rel="noreferrer"><Github size={17}/></a><a href="https://www.linkedin.com" target="_blank" rel="noreferrer"><Linkedin size={17}/></a></div></div></footer>
+    <AnimatePresence>{selectedBlog&&<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[70] grid place-items-center bg-black/70 p-6 backdrop-blur-sm" onClick={()=>setSelectedBlog(null)}><motion.div initial={{y:20,scale:.98}} animate={{y:0,scale:1}} onClick={e=>e.stopPropagation()} className="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-3xl border border-white/10 bg-[#101018] p-7"><div className="flex items-start justify-between gap-4"><div><p className="text-xs uppercase tracking-[0.2em] text-cyan-400">{selectedBlog.publishedDate}</p><h3 className="mt-2 text-2xl font-bold">{selectedBlog.title}</h3></div><button onClick={()=>setSelectedBlog(null)} className="rounded-xl border border-white/10 p-2"><X size={18}/></button></div><img src={selectedBlog.thumbnailUrl} alt="" className="my-6 aspect-video w-full rounded-2xl object-cover"/><p className="whitespace-pre-line leading-8 text-zinc-300">{selectedBlog.content}</p></motion.div></motion.div>}</AnimatePresence>
+  </div>
+}
