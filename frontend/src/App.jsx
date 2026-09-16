@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, useEffect, useMemo, useState } from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight, Monitor } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
@@ -9,12 +9,12 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Skills from './components/Skills';
 import Projects from './components/Projects';
-import Blog from './components/Blog';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import SectionTitle from './components/SectionTitle';
 import Card from './components/Card';
 
+const LazyBlog = lazy(() => import('./components/Blog'));
 const NAV = ['home', 'about', 'skills', 'projects', 'blog', 'contact'];
 const FALLBACK_SKILLS = [
   ['Java', 'Backend', 90], ['Spring Boot', 'Backend', 85], ['Spring Security', 'Backend', 75],
@@ -28,7 +28,7 @@ const FALLBACK_PROJECTS = [
 ];
 
 export default function App() {
-  const { dark, theme: themeMode, toggleTheme, cycleTheme } = useTheme();
+  const { dark, theme: themeMode, cycleTheme } = useTheme();
   const [menu, setMenu] = useState(false), [scrolled, setScrolled] = useState(false), [progress, setProgress] = useState(0);
   const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [blog, setBlog] = useState(null);
   const [typed, setTyped] = useState(''), [loading, setLoading] = useState(true), [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' }), [sending, setSending] = useState(false);
@@ -79,7 +79,7 @@ export default function App() {
       <About SectionTitle={SectionTitle} Card={Card} />
       <Skills SectionTitle={SectionTitle} Card={Card} grouped={grouped} />
       <Projects SectionTitle={SectionTitle} loading={loading} projects={projects} fallbackProjects={FALLBACK_PROJECTS} FaGithub={FaGithub} ExternalLink={ExternalLink} />
-      <Blog SectionTitle={SectionTitle} Card={Card} blogs={blogs} blog={blog} setBlog={setBlog} />
+      <LazyBlog SectionTitle={SectionTitle} Card={Card} blogs={blogs} blog={blog} setBlog={setBlog} />
       <Contact SectionTitle={SectionTitle} Card={Card} theme={theme} form={form} updateField={updateField} submit={submit} sending={sending} />
     </main>
     <Footer />
