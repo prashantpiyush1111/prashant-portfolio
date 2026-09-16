@@ -1,1 +1,0 @@
-Portfolio verification is executed by GitHub Actions.
