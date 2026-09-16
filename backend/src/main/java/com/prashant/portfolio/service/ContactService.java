@@ -34,7 +34,8 @@ public class ContactService {
     }
 
     private void sendAdminNotification(ContactRequestDto request) {
-        if (mailTo != null && !mailTo.isBlank()) {
+        if (mailTo == null || mailTo.isBlank()) return;
+        try {
             SimpleMailMessage email = new SimpleMailMessage();
             email.setTo(mailTo);
             email.setReplyTo(request.getEmail());
@@ -43,6 +44,8 @@ public class ContactService {
                     + "Email: " + request.getEmail() + "\n\n"
                     + request.getMessage());
             mailSender.send(email);
+        } catch (Exception ignored) {
+            // Contact message is already saved; an admin mail failure must not fail the API request.
         }
     }
 
@@ -57,7 +60,7 @@ public class ContactService {
                     + "Regards,\nPrashant Maurya");
             mailSender.send(email);
         } catch (Exception ignored) {
-            // Contact message is already saved; a mail failure must not fail the API request.
+            // Contact message is already saved; a confirmation mail failure must not fail the API request.
         }
     }
 }
