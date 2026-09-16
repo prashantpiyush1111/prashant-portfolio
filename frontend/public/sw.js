@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prashant-portfolio-v1';
+const CACHE_NAME = 'prashant-portfolio-v2';
 const APP_SHELL = ['/', '/manifest.json', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -10,7 +10,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) return;
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
     if (response.ok) {
       const copy = response.clone();
