@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://prashant-portfolio.example.com/sitemap.xml
