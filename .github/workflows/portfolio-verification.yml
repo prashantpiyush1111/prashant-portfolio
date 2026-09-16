@@ -1,0 +1,159 @@
+name: Portfolio Verification
+
+on:
+  push:
+    branches: [portfolio-complete]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: portfolio_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Frontend fresh install, pin, and build
+        id: frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npm ls --depth=0
+          node <<'NODE'
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const tree = require('./node_modules/.package-lock.json');
+          const resolved = tree.packages || {};
+          for (const section of ['dependencies', 'devDependencies']) {
+            for (const name of Object.keys(pkg[section] || {})) {
+              const entry = resolved[`node_modules/${name}`];
+              if (!entry?.version) throw new Error(`Could not resolve ${name}`);
+              pkg[section][name] = `^${entry.version}`;
+            }
+          }
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          NODE
+          rm -rf node_modules package-lock.json
+          npm install
+          npm ls --depth=0
+          npm run build
+
+      - name: Commit pinned dependency manifest
+        if: steps.frontend.outcome == 'success' && github.event_name == 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- frontend/package.json frontend/package-lock.json; then
+            echo "Dependency manifest already pinned."
+          else
+            git add frontend/package.json frontend/package-lock.json
+            git commit -m "chore: pin frontend dependency versions [skip ci]"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
+
+      - name: Setup Java
+        id: java
+        if: steps.frontend.outcome == 'success'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build backend
+        id: backend_build
+        if: steps.frontend.outcome == 'success'
+        working-directory: backend
+        env:
+          DB_URL: jdbc:mysql://127.0.0.1:3306/portfolio_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: mvn -B -DskipTests package
+
+      - name: Restart backend twice and verify 10 skills each time
+        id: backend_restart
+        if: steps.backend_build.outcome == 'success'
+        working-directory: backend
+        env:
+          DB_URL: jdbc:mysql://127.0.0.1:3306/portfolio_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          JAR=$(find target -maxdepth 1 -name '*.jar' ! -name '*-plain.jar' | head -n 1)
+          test -n "$JAR"
+          java -jar "$JAR" > /tmp/backend-first.log 2>&1 &
+          PID=$!
+          trap 'kill $PID 2>/dev/null || true' EXIT
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/api/skills > /tmp/skills-first.json; then break; fi
+            sleep 2
+          done
+          python3 - <<'PY'
+          import json
+          rows=json.load(open('/tmp/skills-first.json'))
+          assert len(rows)==10, f'first startup returned {len(rows)} skills'
+          print('First startup: exactly 10 skills')
+          PY
+          kill $PID
+          wait $PID 2>/dev/null || true
+          java -jar "$JAR" > /tmp/backend-second.log 2>&1 &
+          PID=$!
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/api/skills > /tmp/skills-second.json; then break; fi
+            sleep 2
+          done
+          python3 - <<'PY'
+          import json
+          rows=json.load(open('/tmp/skills-second.json'))
+          assert len(rows)==10, f'second startup returned {len(rows)} skills'
+          print('Second startup: exactly 10 skills')
+          PY
+          kill $PID
+          wait $PID 2>/dev/null || true
+          trap - EXIT
+
+      - name: Persist verification outcome
+        if: always()
+        run: |
+          {
+            echo '# Portfolio verification outcome'
+            echo
+            echo "- Frontend fresh install + build: ${FRONTEND_OUTCOME}"
+            echo "- Backend Maven build: ${BACKEND_BUILD_OUTCOME}"
+            echo "- Backend restart twice + 10 skills twice: ${BACKEND_RESTART_OUTCOME}"
+          } > VERIFICATION_RESULT.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add VERIFICATION_RESULT.md
+          git commit -m "chore: record portfolio verification outcome [skip ci]" || true
+          git push origin HEAD:${{ github.head_ref || github.ref_name }} || true
+        env:
+          FRONTEND_OUTCOME: ${{ steps.frontend.outcome }}
+          BACKEND_BUILD_OUTCOME: ${{ steps.backend_build.outcome }}
+          BACKEND_RESTART_OUTCOME: ${{ steps.backend_restart.outcome }}
