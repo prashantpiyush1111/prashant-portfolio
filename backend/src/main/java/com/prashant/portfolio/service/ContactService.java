@@ -29,16 +29,30 @@ public class ContactService {
         message.setSubject(request.getSubject());
         message.setMessage(request.getMessage());
         repository.save(message);
+        sendAdminNotification(request);
+        sendConfirmation(request);
+    }
 
-        if (!mailTo.isBlank()) {
-            SimpleMailMessage email = new SimpleMailMessage();
-            email.setTo(mailTo);
-            email.setReplyTo(request.getEmail());
-            email.setSubject("Portfolio Contact: " + request.getSubject());
-            email.setText("Name: " + request.getName() + "\n"
-                    + "Email: " + request.getEmail() + "\n\n"
-                    + request.getMessage());
-            mailSender.send(email);
-        }
+    private void sendAdminNotification(ContactRequestDto request) {
+        if (mailTo.isBlank()) return;
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(mailTo);
+        email.setReplyTo(request.getEmail());
+        email.setSubject("Portfolio Contact: " + request.getSubject());
+        email.setText("Name: " + request.getName() + "\n"
+                + "Email: " + request.getEmail() + "\n\n"
+                + request.getMessage());
+        mailSender.send(email);
+    }
+
+    private void sendConfirmation(ContactRequestDto request) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) return;
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(request.getEmail());
+        email.setSubject("Thanks for reaching out to Prashant Maurya");
+        email.setText("Hi " + request.getName() + ",\n\n"
+                + "Thanks for reaching out through my portfolio. I have received your message and will get back to you soon.\n\n"
+                + "Regards,\nPrashant Maurya");
+        mailSender.send(email);
     }
 }
