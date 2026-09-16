@@ -1,0 +1,5 @@
+import { motion } from 'framer-motion';
+
+export default function Skills({ SectionTitle, Card, grouped }) {
+  return <section id="skills" className="border-y border-zinc-200 bg-white/60 px-6 py-24 dark:border-white/5 dark:bg-white/[.015]"><div className="mx-auto max-w-6xl"><SectionTitle eyebrow="Skills" title="My technical toolkit." /><div className="grid gap-6 md:grid-cols-2">{Object.entries(grouped).map(([category, list]) => <Card key={category} className="p-7"><h3 className="mb-6 text-lg font-bold">{category}</h3><div className="space-y-5">{list.map((skill) => <div key={skill.id || skill.name}><div className="mb-2 flex justify-between text-sm"><span>{skill.name}</span><span className="text-zinc-500">{skill.proficiencyPercent}%</span></div><div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10"><motion.div initial={{ width: 0 }} whileInView={{ width: `${skill.proficiencyPercent}%` }} viewport={{ once: true }} transition={{ duration: .9 }} className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-purple-500" /></div></div>)}</div></Card>)}</div></div></section>;
+}

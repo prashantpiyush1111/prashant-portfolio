@@ -1,0 +1,10 @@
+export default function Header({ nav, menu, setMenu, go, toggleTheme, dark, theme, scrolled, Sun, Moon, Menu, X }) {
+  return <header className={`fixed inset-x-0 top-0 z-50 border-b border-transparent transition-all ${theme.header}`}>
+    <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+      <button onClick={() => go('home')} className="text-xl font-black">PM<span className="text-cyan-500">.</span></button>
+      <nav className="hidden items-center gap-7 md:flex">{nav.map((item) => <button key={item} onClick={() => go(item)} className={`text-sm transition ${theme.muted} hover:text-cyan-500`}>{item[0].toUpperCase() + item.slice(1)}</button>)}<button onClick={toggleTheme} aria-label="Toggle theme" className="rounded-xl border border-zinc-200 p-2 dark:border-white/10">{dark ? <Sun size={17} /> : <Moon size={17} />}</button></nav>
+      <button className="md:hidden" onClick={() => setMenu((value) => !value)} aria-label="Open menu">{menu ? <X /> : <Menu />}</button>
+    </div>
+    {menu && <div className={`border-t px-6 py-3 md:hidden ${theme.mobile}`}>{nav.map((item) => <button key={item} onClick={() => go(item)} className={`block w-full py-3 text-left ${theme.muted}`}>{item[0].toUpperCase() + item.slice(1)}</button>)}<button onClick={toggleTheme} className={`flex items-center gap-2 py-3 ${theme.muted}`}>{dark ? <Sun size={16} /> : <Moon size={16} />}Toggle theme</button></div>}
+  </header>;
+}

@@ -8,6 +8,7 @@ import lombok.Data;
 public class ContactRequestDto {
     @NotBlank private String name;
     @NotBlank @Email private String email;
-    private String subject;
+    @NotBlank private String subject;
     @NotBlank private String message;
+    private String website;
 }
