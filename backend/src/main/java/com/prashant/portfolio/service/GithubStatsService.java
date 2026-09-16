@@ -45,7 +45,8 @@ public class GithubStatsService {
                     repo[0], repo[1]
             ).getBody();
             if (response == null) return new GithubStatsDto(0, null);
-            long stars = ((Number) response.getOrDefault("stargazers_count", 0)).longValue();
+            Object starValue = response.get("stargazers_count");
+            long stars = starValue instanceof Number number ? number.longValue() : 0;
             Object updated = response.get("updated_at");
             Instant updatedAt = updated == null ? null : Instant.parse(updated.toString());
             GithubStatsDto stats = new GithubStatsDto(stars, updatedAt);
