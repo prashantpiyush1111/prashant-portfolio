@@ -1,12 +1,24 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Star, Clock3 } from 'lucide-react';
+import api from '../api/axios';
 
 function ProjectCard({ project, FaGithub, ExternalLink }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [stats, setStats] = useState(null);
   const tags = (project.techStack || '').split(',').map((value) => value.trim()).filter(Boolean);
+
+  useEffect(() => {
+    if (!project.id) return;
+    let active = true;
+    api.get(`/projects/${project.id}/github-stats`).then(({ data }) => active && setStats(data)).catch(() => {});
+    return () => { active = false; };
+  }, [project.id]);
+
   return <motion.article initial={{ opacity: 0, y: 25 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} onMouseMove={(event) => { const r = event.currentTarget.getBoundingClientRect(); setTilt({ x: ((event.clientX - r.left) / r.width - .5) * 5, y: ((event.clientY - r.top) / r.height - .5) * -5 }); }} onMouseLeave={() => setTilt({ x: 0, y: 0 })} style={{ transform: `perspective(1100px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)` }} className="group overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-xl shadow-zinc-200/30 transition-all duration-300 hover:border-cyan-400/50 dark:border-white/10 dark:bg-white/[.045] dark:shadow-2xl dark:shadow-black/20">
-    <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-cyan-400/10 to-purple-500/10"><img src={project.imageUrl} alt={project.title} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-110" onError={(event) => { event.currentTarget.style.display = 'none'; }} /><div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent dark:from-[#0a0a0f]" /><div className="absolute inset-x-4 bottom-4 flex translate-y-4 gap-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100"><a href={project.liveDemoUrl || project.githubUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-bold text-black"><ExternalLink size={15} />Live Demo</a><a href={project.githubUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-black/75 px-3 py-3 text-sm font-bold text-white ring-1 ring-white/20"><FaGithub />GitHub</a></div></div>
-    <div className="p-6"><h3 className="text-xl font-bold">{project.title}</h3><p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{project.description}</p><div className="mt-5 flex flex-wrap gap-2">{tags.map((tag) => <span key={tag} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">{tag}</span>)}</div></div>
+    <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-cyan-400/10 to-purple-500/10"><img src={project.imageUrl} alt={project.title} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-110" onError={(event) => { event.currentTarget.style.display = 'none'; }} /><div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent dark:from-[#0a0a0f]" /><div className="absolute inset-x-4 bottom-4 flex translate-y-4 gap-2 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100"><Link to={`/projects/${project.id}`} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-bold text-black">View Project</Link><a href={project.githubUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-black/75 px-3 py-3 text-sm font-bold text-white ring-1 ring-white/20"><FaGithub />GitHub</a></div></div>
+    <div className="p-6"><div className="flex items-start justify-between gap-3"><h3 className="text-xl font-bold"><Link to={`/projects/${project.id}`} className="hover:text-cyan-500">{project.title}</Link></h3>{stats && <div className="flex shrink-0 gap-2 text-xs text-zinc-500"><span className="flex items-center gap-1"><Star size={13} />{stats.stars}</span><span className="hidden items-center gap-1 sm:flex"><Clock3 size={13} />{stats.updatedAt ? new Date(stats.updatedAt).toLocaleDateString() : '—'}</span></div>}</div><p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{project.description}</p><div className="mt-5 flex flex-wrap gap-2">{tags.map((tag) => <span key={tag} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">{tag}</span>)}</div></div>
   </motion.article>;
 }
 
