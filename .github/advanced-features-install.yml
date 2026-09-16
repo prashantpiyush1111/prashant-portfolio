@@ -2,7 +2,7 @@ name: Prepare Advanced Frontend Dependencies
 
 on:
   push:
-    branches: [advanced-portfolio-features]
+    branches: [main]
 
 permissions:
   contents: write
