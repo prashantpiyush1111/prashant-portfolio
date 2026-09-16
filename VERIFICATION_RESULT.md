@@ -1,5 +1,5 @@
 # Portfolio verification outcome
 
-- Frontend fresh install + build: success
-- Backend Maven build: success
-- Backend restart twice + 10 skills twice: success
+- Frontend fresh install + build: failure
+- Backend Maven build: skipped
+- Backend restart twice + 10 skills twice: skipped
