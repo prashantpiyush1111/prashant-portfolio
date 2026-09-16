@@ -31,7 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: portfolio-complete
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Setup Node
@@ -65,7 +65,7 @@ jobs:
           npm run build
 
       - name: Commit pinned dependency manifest
-        if: steps.frontend.outcome == 'success'
+        if: steps.frontend.outcome == 'success' && github.event_name == 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -74,7 +74,7 @@ jobs:
           else
             git add frontend/package.json frontend/package-lock.json
             git commit -m "chore: pin frontend dependency versions [skip ci]"
-            git push origin portfolio-complete
+            git push origin HEAD:${{ github.head_ref }}
           fi
 
       - name: Setup Java
@@ -152,7 +152,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add VERIFICATION_RESULT.md
           git commit -m "chore: record portfolio verification outcome [skip ci]" || true
-          git push origin portfolio-complete || true
+          git push origin HEAD:${{ github.head_ref || github.ref_name }} || true
         env:
           FRONTEND_OUTCOME: ${{ steps.frontend.outcome }}
           BACKEND_BUILD_OUTCOME: ${{ steps.backend_build.outcome }}
