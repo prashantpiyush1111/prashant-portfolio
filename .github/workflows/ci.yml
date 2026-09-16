@@ -47,6 +47,58 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: root
         run: mvn -B clean verify
+      - name: Backend restart twice and capture raw /api/skills output
+        working-directory: backend
+        env:
+          DB_URL: jdbc:mysql://127.0.0.1:3306/portfolio_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          JAR=$(find target -maxdepth 1 -name '*.jar' ! -name '*-plain.jar' | head -n 1)
+          test -n "$JAR"
+          java -jar "$JAR" > /tmp/backend-first.log 2>&1 &
+          PID=$!
+          trap 'kill $PID 2>/dev/null || true' EXIT
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/api/skills > /tmp/skills-first.json; then break; fi
+            sleep 2
+          done
+          python3 - <<'PY'
+          import json
+          rows=json.load(open('/tmp/skills-first.json'))
+          assert len(rows)==10, f'first startup returned {len(rows)} skills'
+          print('First startup raw /api/skills response:')
+          print(open('/tmp/skills-first.json').read())
+          PY
+          kill $PID
+          wait $PID 2>/dev/null || true
+          java -jar "$JAR" > /tmp/backend-second.log 2>&1 &
+          PID=$!
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/api/skills > /tmp/skills-second.json; then break; fi
+            sleep 2
+          done
+          python3 - <<'PY'
+          import json
+          rows=json.load(open('/tmp/skills-second.json'))
+          assert len(rows)==10, f'second startup returned {len(rows)} skills'
+          print('Second startup raw /api/skills response:')
+          print(open('/tmp/skills-second.json').read())
+          PY
+          kill $PID
+          wait $PID 2>/dev/null || true
+          trap - EXIT
+          {
+            echo '# Raw /api/skills verification'
+            echo
+            echo '## First startup'
+            echo
+            cat /tmp/skills-first.json
+            echo
+            echo '## Second startup'
+            echo
+            cat /tmp/skills-second.json
+          } > ../VERIFICATION_RESULT.md
 
   deploy:
     needs: verify
