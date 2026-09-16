@@ -2,6 +2,8 @@ import { lazy, useEffect, useMemo, useState } from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight, Monitor } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
+import { Helmet } from 'react-helmet-async';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import api from './api/axios';
 import { useTheme } from './context/ThemeContext';
 import Header from './components/Header';
@@ -13,6 +15,9 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import SectionTitle from './components/SectionTitle';
 import Card from './components/Card';
+import CommandPalette from './components/CommandPalette';
+import ProjectDetails from './pages/ProjectDetails';
+import BlogDetails from './pages/BlogDetails';
 
 const LazyBlog = lazy(() => import('./components/Blog'));
 const NAV = ['home', 'about', 'skills', 'projects', 'blog', 'contact'];
@@ -22,12 +27,12 @@ const FALLBACK_SKILLS = [
   ['React.js', 'Frontend', 75], ['Git', 'Tools', 85], ['Maven', 'Tools', 80], ['Postman', 'Tools', 80]
 ];
 const FALLBACK_PROJECTS = [
-  { title: 'AI-Driven Sales Forecasting', description: 'AI-powered sales forecasting platform with business intelligence dashboards and predictive insights.', techStack: 'Java, Spring Boot, MySQL, React, Python, FastAPI', githubUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', liveDemoUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80' },
-  { title: 'RAG Educational Assistant', description: 'Educational assistant that retrieves relevant knowledge and generates grounded answers from learning resources.', techStack: 'Java, Spring Boot, React, Python, RAG, Qdrant', githubUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80' },
-  { title: 'Task Management System', description: 'Jira-style task management system with assignments, role-based permissions, deadlines, and collaboration.', techStack: 'Java, Spring Boot, MySQL, React, JWT', githubUrl: 'https://github.com/prashantpiyush1111/task-management-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/task-management-system', imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80' }
+  { id: 1, title: 'AI-Driven Sales Forecasting', description: 'AI-powered sales forecasting platform with business intelligence dashboards and predictive insights.', techStack: 'Java, Spring Boot, MySQL, React, Python, FastAPI', githubUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', liveDemoUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80' },
+  { id: 2, title: 'RAG Educational Assistant', description: 'Educational assistant that retrieves relevant knowledge and generates grounded answers from learning resources.', techStack: 'Java, Spring Boot, React, Python, RAG, Qdrant', githubUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80' },
+  { id: 3, title: 'Task Management System', description: 'Jira-style task management system with assignments, role-based permissions, deadlines, and collaboration.', techStack: 'Java, Spring Boot, MySQL, React, JWT', githubUrl: 'https://github.com/prashantpiyush1111/task-management-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/task-management-system', imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80' }
 ];
 
-export default function App() {
+function HomePage() {
   const { dark, theme: themeMode, cycleTheme } = useTheme();
   const [menu, setMenu] = useState(false), [scrolled, setScrolled] = useState(false), [progress, setProgress] = useState(0);
   const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [blog, setBlog] = useState(null);
@@ -71,17 +76,32 @@ export default function App() {
   const theme = dark ? { page: 'bg-[#0a0a0f] text-[#f5f5f5]', muted: 'text-zinc-400', header: scrolled ? 'border-white/10 bg-[#0a0a0f]/80' : '', input: 'border-white/10 bg-white/5 text-white', mobile: 'border-white/10 bg-[#0a0a0f]/95' } : { page: 'bg-slate-50 text-slate-900', muted: 'text-zinc-600', header: scrolled ? 'border-slate-200 bg-white/85' : '', input: 'border-slate-200 bg-white text-slate-900', mobile: 'border-slate-200 bg-white/95' };
 
   return <div className={`min-h-screen overflow-x-hidden ${theme.page}`}>
+    <Helmet><title>Prashant Maurya | Java Full Stack Developer</title><meta name="description" content="Prashant Maurya — Java Full Stack Developer specializing in Java, Spring Boot, React, MySQL and AI projects." /></Helmet>
     <Toaster position="top-right" />
+    <CommandPalette go={go} />
     <div className="fixed left-0 top-0 z-[100] h-1 bg-gradient-to-r from-cyan-400 to-purple-500" style={{ width: `${progress}%` }} />
     <Header nav={NAV} menu={menu} setMenu={setMenu} go={go} theme={theme} scrolled={scrolled} themeMode={themeMode} cycleTheme={cycleTheme} dark={dark} Sun={Sun} Moon={Moon} Monitor={Monitor} Menu={Menu} X={X} />
     <main>
       <Hero typed={typed} go={go} FaGithub={FaGithub} FaLinkedin={FaLinkedin} Mail={Mail} ArrowUpRight={ArrowUpRight} theme={theme} />
       <About SectionTitle={SectionTitle} Card={Card} />
-      <Skills SectionTitle={SectionTitle} Card={Card} grouped={grouped} />
+      <Skills SectionTitle={SectionTitle} Card={Card} grouped={grouped} loading={loading} />
       <Projects SectionTitle={SectionTitle} loading={loading} projects={projects} fallbackProjects={FALLBACK_PROJECTS} FaGithub={FaGithub} ExternalLink={ExternalLink} />
       <LazyBlog SectionTitle={SectionTitle} Card={Card} blogs={blogs} blog={blog} setBlog={setBlog} />
       <Contact SectionTitle={SectionTitle} Card={Card} theme={theme} form={form} updateField={updateField} submit={submit} sending={sending} />
     </main>
     <Footer />
   </div>;
+}
+
+function AppRoutes() {
+  const location = useLocation();
+  useEffect(() => {
+    api.post('/analytics/pageview', { path: `${location.pathname}${location.search}` }).catch(() => {});
+  }, [location.pathname, location.search]);
+  return <Routes><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<ProjectDetails />} /><Route path="/blog/:id" element={<BlogDetails />} /><Route path="*" element={<HomePage />} /></Routes>;
+}
+
+export default function App() {
+  const navigate = useNavigate();
+  return <AppRoutes navigate={navigate} />;
 }
