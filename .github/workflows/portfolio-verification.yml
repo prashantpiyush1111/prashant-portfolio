@@ -39,7 +39,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Resolve and pin frontend dependencies
+      - name: Frontend fresh install, pin, and build
+        id: frontend
         working-directory: frontend
         run: |
           npm install
@@ -64,6 +65,7 @@ jobs:
           npm run build
 
       - name: Commit pinned dependency manifest
+        if: steps.frontend.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -76,6 +78,8 @@ jobs:
           fi
 
       - name: Setup Java
+        id: java
+        if: steps.frontend.outcome == 'success'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -83,6 +87,8 @@ jobs:
           cache: maven
 
       - name: Build backend
+        id: backend_build
+        if: steps.frontend.outcome == 'success'
         working-directory: backend
         env:
           DB_URL: jdbc:mysql://127.0.0.1:3306/portfolio_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
@@ -90,7 +96,9 @@ jobs:
           DB_PASSWORD: root
         run: mvn -B -DskipTests package
 
-      - name: Start backend, verify 10 skills, restart, verify 10 again
+      - name: Restart backend twice and verify 10 skills each time
+        id: backend_restart
+        if: steps.backend_build.outcome == 'success'
         working-directory: backend
         env:
           DB_URL: jdbc:mysql://127.0.0.1:3306/portfolio_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
@@ -130,11 +138,22 @@ jobs:
           wait $PID 2>/dev/null || true
           trap - EXIT
 
-      - name: Record successful verification
+      - name: Persist verification outcome
+        if: always()
         run: |
-          printf '%s\n' '# Portfolio verification passed' '' '- `npm install` completed' '- `npm ls --depth=0` completed after a fresh install' '- `npm run build` completed successfully' '- Spring Boot packaged successfully' '- First backend startup: `/api/skills` returned exactly 10 rows' '- Backend restarted: `/api/skills` returned exactly 10 rows again' > VERIFICATION_PASSED.md
+          {
+            echo '# Portfolio verification outcome'
+            echo
+            echo "- Frontend fresh install + build: ${FRONTEND_OUTCOME}"
+            echo "- Backend Maven build: ${BACKEND_BUILD_OUTCOME}"
+            echo "- Backend restart twice + 10 skills twice: ${BACKEND_RESTART_OUTCOME}"
+          } > VERIFICATION_RESULT.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add VERIFICATION_PASSED.md
-          git commit -m "chore: record verified portfolio build [skip ci]"
-          git push origin portfolio-complete
+          git add VERIFICATION_RESULT.md
+          git commit -m "chore: record portfolio verification outcome [skip ci]" || true
+          git push origin portfolio-complete || true
+        env:
+          FRONTEND_OUTCOME: ${{ steps.frontend.outcome }}
+          BACKEND_BUILD_OUTCOME: ${{ steps.backend_build.outcome }}
+          BACKEND_RESTART_OUTCOME: ${{ steps.backend_restart.outcome }}
