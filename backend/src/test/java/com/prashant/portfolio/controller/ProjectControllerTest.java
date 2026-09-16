@@ -5,6 +5,7 @@ import com.prashant.portfolio.entity.Project;
 import com.prashant.portfolio.repository.BlogRepository;
 import com.prashant.portfolio.repository.ProjectRepository;
 import com.prashant.portfolio.repository.SkillRepository;
+import com.prashant.portfolio.service.GithubStatsService;
 import com.prashant.portfolio.service.ProjectService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ class ProjectControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @MockitoBean ProjectService service;
+    @MockitoBean GithubStatsService githubStatsService;
 
     // PortfolioApplication declares the seedData CommandLineRunner as a @Bean.
     // WebMvcTest does not load JPA repositories, so provide test doubles for
