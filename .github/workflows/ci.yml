@@ -2,9 +2,12 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches:
+      - main
+      - '**'
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   verify:
@@ -22,24 +25,32 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=30
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+
       - name: Frontend test and build
         working-directory: frontend
         run: |
           npm ci
           npm run test
           npm run build
-      - uses: actions/setup-java@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: maven
+
       - name: Backend tests and verify
         working-directory: backend
         env:
@@ -47,21 +58,3 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: root
         run: mvn -B clean verify
-
-  deploy:
-    needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deployment placeholders
-        run: |
-          echo "CI is green. Add deployment secrets before enabling provider triggers."
-          echo "Expected placeholders: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID"
-          echo "Expected placeholders: RENDER_DEPLOY_HOOK_URL or equivalent Render token/service ID"
-          echo "No deployment request is sent until secrets are configured."
-      - name: Optional Vercel deploy placeholder
-        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != '' }}
-        run: echo "Vercel secrets detected; wire the provider-specific CLI command here."
-      - name: Optional Render deploy placeholder
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
