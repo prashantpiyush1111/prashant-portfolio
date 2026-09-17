@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 
-export default function Hero({ typed, go, dark, FaGithub, FaLinkedin, Mail, ArrowUpRight, theme }) {
+export default function Hero({ typed, go, FaGithub, FaLinkedin, Mail, ArrowUpRight, theme }) {
   return <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-20">
-    <div className="absolute left-[-10%] top-[15%] h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl animate-pulse" /><div className="absolute right-[-10%] bottom-[10%] h-96 w-96 rounded-full bg-purple-500/20 blur-3xl animate-pulse" />
+    <div aria-hidden="true" className="hero-mesh pointer-events-none absolute inset-[-12%] opacity-90" />
+    <div aria-hidden="true" className="absolute left-[-10%] top-[15%] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
+    <div aria-hidden="true" className="absolute right-[-10%] bottom-[10%] h-96 w-96 rounded-full bg-purple-500/15 blur-3xl" />
     <motion.div initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8 }} className="relative max-w-4xl text-center">
       <p className="mb-5 font-mono text-sm text-cyan-500">&lt;hello world /&gt;</p><h1 className="text-5xl font-black tracking-tight sm:text-7xl">Hi, I'm <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">Prashant Maurya</span></h1>
       <p className="mt-7 text-xl sm:text-2xl"><span>{typed}</span><span className="ml-1 animate-pulse text-cyan-500">|</span></p><p className={`mx-auto mt-6 max-w-2xl leading-7 ${theme.muted}`}>B.Tech CSE student crafting reliable Java backends, polished React interfaces, and AI-powered applications.</p>
