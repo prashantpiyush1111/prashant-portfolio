@@ -23,7 +23,7 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String ip = request.getRemoteAddr();
+        String ip = clientIp(request);
         long now = System.currentTimeMillis();
         Long previous = lastRequestByIp.putIfAbsent(ip, now);
         if (previous != null && now - previous < 1000) {
@@ -34,5 +34,10 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
         }
         lastRequestByIp.put(ip, now);
         filterChain.doFilter(request, response);
+    }
+
+    private String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        return forwarded == null || forwarded.isBlank() ? request.getRemoteAddr() : forwarded.split(",")[0].trim();
     }
 }
