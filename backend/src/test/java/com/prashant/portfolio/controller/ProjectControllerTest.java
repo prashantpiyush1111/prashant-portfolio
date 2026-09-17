@@ -10,8 +10,8 @@ import com.prashant.portfolio.service.ProjectService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -24,15 +24,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProjectControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
-    @MockitoBean ProjectService service;
-    @MockitoBean GithubStatsService githubStatsService;
+    @MockBean ProjectService service;
+    @MockBean GithubStatsService githubStatsService;
 
     // PortfolioApplication declares the seedData CommandLineRunner as a @Bean.
     // WebMvcTest does not load JPA repositories, so provide test doubles for
     // the runner's dependencies without changing production startup behavior.
-    @MockitoBean SkillRepository skillRepository;
-    @MockitoBean ProjectRepository projectRepository;
-    @MockitoBean BlogRepository blogRepository;
+    @MockBean SkillRepository skillRepository;
+    @MockBean ProjectRepository projectRepository;
+    @MockBean BlogRepository blogRepository;
 
     @Test void getAllProjectsReturnsOk() throws Exception {
         when(service.getAllProjects()).thenReturn(List.of(new Project()));
