@@ -49,13 +49,14 @@ public class PortfolioApplication {
                 blogRepository.saveAll(List.of(first, second));
             }
 
-            if (achievementRepository.count() == 0) {
-                achievementRepository.saveAll(List.of(
-                    achievement("Java Full Stack Development", "Building production-oriented applications with Java, Spring Boot, React and MySQL.", LocalDate.of(2026, 9, 1), "experience"),
-                    achievement("AI-Driven Sales Forecasting", "Developing a full-stack forecasting platform with a Spring Boot backend and AI services.", LocalDate.of(2026, 8, 15), "experience"),
-                    achievement("Full Stack Engineering Focus", "Hands-on work across REST APIs, authentication, databases, frontend systems and deployment workflows.", LocalDate.of(2026, 7, 1), "certification")
-                ));
-            }
+            List<Achievement> seedAchievements = List.of(
+                achievement("Java Full Stack Development", "Building production-oriented applications with Java, Spring Boot, React and MySQL.", LocalDate.of(2026, 9, 1), "experience"),
+                achievement("AI-Driven Sales Forecasting", "Developing a full-stack forecasting platform with a Spring Boot backend and AI services.", LocalDate.of(2026, 8, 15), "experience"),
+                achievement("Full Stack Engineering Focus", "Hands-on work across REST APIs, authentication, databases, frontend systems and deployment workflows.", LocalDate.of(2026, 7, 1), "certification")
+            );
+            seedAchievements.stream()
+                    .filter(seed -> !achievementRepository.existsByTitleIgnoreCase(seed.getTitle()))
+                    .forEach(achievementRepository::save);
         };
     }
 
