@@ -10,7 +10,7 @@ export default function Footer() {
 
         <div className="flex items-center gap-4">
           <a
-            href="http://localhost:8080/api/blogs/rss"
+            href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/blogs/rss`}
             aria-label="Subscribe via RSS"
             className="inline-flex items-center gap-1 hover:text-cyan-500"
           >
