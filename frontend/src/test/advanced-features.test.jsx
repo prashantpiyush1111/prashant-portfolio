@@ -6,8 +6,7 @@ import CommandPalette from '../components/CommandPalette';
 import ProjectDetails from '../pages/ProjectDetails';
 import BlogDetails from '../pages/BlogDetails';
 
-const get = vi.fn();
-const post = vi.fn();
+const { get, post } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }));
 vi.mock('../api/axios', () => ({ default: { get, post } }));
 vi.mock('../context/ThemeContext', () => ({ useTheme: () => ({ theme: 'dark', cycleTheme: vi.fn() }) }));
 
