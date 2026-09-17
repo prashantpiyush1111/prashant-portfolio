@@ -3,6 +3,9 @@ package com.prashant.portfolio.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "project")
@@ -22,6 +25,11 @@ public class Project {
     private String githubUrl;
     private String liveDemoUrl;
     private String imageUrl;
+
+    @ElementCollection
+    @CollectionTable(name = "project_image_urls", joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "image_url", nullable = false)
+    private List<String> imageUrls = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean featured = false;
