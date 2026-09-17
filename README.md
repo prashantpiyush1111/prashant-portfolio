@@ -27,7 +27,12 @@ mvn spring-boot:run
 ```
 Backend: `http://localhost:8080`
 
-APIs: `GET /api/projects`, `GET /api/projects/{id}`, `GET /api/skills`, `GET /api/blogs`, `GET /api/blogs/{id}`, `POST /api/contact`
+APIs: `GET /api/projects`, `GET /api/projects/{id}`, `GET /api/skills`, `GET /api/blogs`, `GET /api/blogs/{id}`, `GET /api/achievements`, `POST /api/contact`
+
+Health check: `GET /actuator/health` (only the health actuator endpoint is exposed).
+
+### Production profile
+Set `SPRING_PROFILES_ACTIVE=prod` in the deployment environment. The production profile uses `spring.jpa.hibernate.ddl-auto=validate` so Hibernate will validate the existing schema instead of changing it automatically. Apply database schema changes through your deployment/database migration process before enabling the profile.
 
 ## Frontend
 ```bash
@@ -41,4 +46,12 @@ Frontend: `http://localhost:5173`
 Set `VITE_API_BASE_URL` in `.env` when the backend is hosted elsewhere.
 
 ## Resume
-The Download Resume button expects `frontend/public/resume.pdf`. Add the final PDF before deployment.
+The Download Resume button expects `frontend/public/resume.pdf`. Replace that placeholder file with your final PDF using the exact same filename before deployment.
+
+## Project screenshots
+Drop real project screenshots in `frontend/public/projects/` using the filenames referenced by the fallback project data:
+- `ai-sales-forecasting.png`
+- `rag-educational-assistant.png`
+- `task-management-system.png`
+
+The frontend uses relative `/projects/...` paths, so replacing those image files does not require code changes.
