@@ -1,9 +1,11 @@
 package com.prashant.portfolio.controller;
 
 import com.prashant.portfolio.dto.AnalyticsSummaryDto;
+import com.prashant.portfolio.entity.Achievement;
 import com.prashant.portfolio.entity.Blog;
 import com.prashant.portfolio.entity.Project;
 import com.prashant.portfolio.entity.Skill;
+import com.prashant.portfolio.repository.AchievementRepository;
 import com.prashant.portfolio.repository.BlogRepository;
 import com.prashant.portfolio.repository.ProjectRepository;
 import com.prashant.portfolio.repository.SkillRepository;
@@ -20,12 +22,14 @@ public class AdminController {
     private final SkillRepository skillRepository;
     private final ProjectRepository projectRepository;
     private final BlogRepository blogRepository;
+    private final AchievementRepository achievementRepository;
     private final AnalyticsService analyticsService;
 
-    public AdminController(SkillRepository skillRepository, ProjectRepository projectRepository, BlogRepository blogRepository, AnalyticsService analyticsService) {
+    public AdminController(SkillRepository skillRepository, ProjectRepository projectRepository, BlogRepository blogRepository, AchievementRepository achievementRepository, AnalyticsService analyticsService) {
         this.skillRepository = skillRepository;
         this.projectRepository = projectRepository;
         this.blogRepository = blogRepository;
+        this.achievementRepository = achievementRepository;
         this.analyticsService = analyticsService;
     }
 
@@ -43,6 +47,11 @@ public class AdminController {
     @PostMapping("/blogs") public Blog addBlog(@RequestBody Blog blog) { blog.setId(null); return blogRepository.save(blog); }
     @PutMapping("/blogs/{id}") public Blog updateBlog(@PathVariable Long id, @RequestBody Blog blog) { blog.setId(id); return blogRepository.save(blog); }
     @DeleteMapping("/blogs/{id}") public void deleteBlog(@PathVariable Long id) { if (!blogRepository.existsById(id)) throw new ResponseStatusException(HttpStatus.NOT_FOUND); blogRepository.deleteById(id); }
+
+    @GetMapping("/achievements") public List<Achievement> achievements() { return achievementRepository.findAll(); }
+    @PostMapping("/achievements") public Achievement addAchievement(@RequestBody Achievement achievement) { achievement.setId(null); return achievementRepository.save(achievement); }
+    @PutMapping("/achievements/{id}") public Achievement updateAchievement(@PathVariable Long id, @RequestBody Achievement achievement) { if (!achievementRepository.existsById(id)) throw new ResponseStatusException(HttpStatus.NOT_FOUND); achievement.setId(id); return achievementRepository.save(achievement); }
+    @DeleteMapping("/achievements/{id}") public void deleteAchievement(@PathVariable Long id) { if (!achievementRepository.existsById(id)) throw new ResponseStatusException(HttpStatus.NOT_FOUND); achievementRepository.deleteById(id); }
 
     @GetMapping("/analytics/summary") public List<AnalyticsSummaryDto> analyticsSummary() { return analyticsService.summary(); }
 }
