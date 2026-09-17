@@ -1,14 +1,16 @@
-import { lazy, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight, Monitor } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import api from './api/axios';
 import { useTheme } from './context/ThemeContext';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
+import Experience from './components/Experience';
 import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
@@ -16,18 +18,18 @@ import Footer from './components/Footer';
 import SectionTitle from './components/SectionTitle';
 import Card from './components/Card';
 import CommandPalette from './components/CommandPalette';
-import ProjectDetails from './pages/ProjectDetails';
-import BlogDetails from './pages/BlogDetails';
 
 const LazyBlog = lazy(() => import('./components/Blog'));
-const NAV = ['home', 'about', 'skills', 'projects', 'blog', 'contact'];
+const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
+const BlogDetails = lazy(() => import('./pages/BlogDetails'));
+const NAV = ['home', 'about', 'experience', 'skills', 'projects', 'blog', 'contact'];
 const FALLBACK_SKILLS = [
   ['Java', 'Backend', 90], ['Spring Boot', 'Backend', 85], ['Spring Security', 'Backend', 75],
   ['JWT', 'Backend', 75], ['Hibernate/JPA', 'Backend', 80], ['MySQL', 'Database', 85],
   ['React.js', 'Frontend', 75], ['Git', 'Tools', 85], ['Maven', 'Tools', 80], ['Postman', 'Tools', 80]
 ];
 const FALLBACK_PROJECTS = [
-  { id: 1, title: 'AI-Driven Sales Forecasting', description: 'AI-powered sales forecasting platform with business intelligence dashboards and predictive insights.', techStack: 'Java, Spring Boot, MySQL, React, Python, FastAPI', githubUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', liveDemoUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80' },
+  { id: 1, title: 'AI-Driven Sales Forecasting', description: 'AI-powered sales forecasting platform with business intelligence dashboards and predictive insights.', techStack: 'Java, Spring Boot, MySQL, React, Python, FastAPI', githubUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', liveDemoUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Falescasting', imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80' },
   { id: 2, title: 'RAG Educational Assistant', description: 'Educational assistant that retrieves relevant knowledge and generates grounded answers from learning resources.', techStack: 'Java, Spring Boot, React, Python, RAG, Qdrant', githubUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80' },
   { id: 3, title: 'Task Management System', description: 'Jira-style task management system with assignments, role-based permissions, deadlines, and collaboration.', techStack: 'Java, Spring Boot, MySQL, React, JWT', githubUrl: 'https://github.com/prashantpiyush1111/task-management-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/task-management-system', imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80' }
 ];
@@ -35,16 +37,16 @@ const FALLBACK_PROJECTS = [
 function HomePage() {
   const { dark, theme: themeMode, cycleTheme } = useTheme();
   const [menu, setMenu] = useState(false), [scrolled, setScrolled] = useState(false), [progress, setProgress] = useState(0);
-  const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [blog, setBlog] = useState(null);
+  const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [achievements, setAchievements] = useState([]), [blog, setBlog] = useState(null);
   const [typed, setTyped] = useState(''), [loading, setLoading] = useState(true), [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' }), [sending, setSending] = useState(false);
   const phrases = ['Java Full Stack Developer', 'Spring Boot Developer', 'React Developer'];
 
   useEffect(() => {
     let active = true;
-    Promise.all([api.get('/projects'), api.get('/skills'), api.get('/blogs')]).then(([p, s, b]) => {
-      if (!active) return; setProjects(p.data); setSkills(s.data); setBlogs(b.data);
+    Promise.all([api.get('/projects'), api.get('/skills'), api.get('/blogs'), api.get('/achievements')]).then(([p, s, b, a]) => {
+      if (!active) return; setProjects(p.data); setSkills(s.data); setBlogs(b.data); setAchievements(a.data);
     }).catch(() => {
-      if (!active) return; setProjects(FALLBACK_PROJECTS); setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent }))); setBlogs([]);
+      if (!active) return; setProjects(FALLBACK_PROJECTS); setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent }))); setBlogs([]); setAchievements([]);
     }).finally(() => active && setLoading(false));
     return () => { active = false; };
   }, []);
@@ -84,6 +86,7 @@ function HomePage() {
     <main>
       <Hero typed={typed} go={go} FaGithub={FaGithub} FaLinkedin={FaLinkedin} Mail={Mail} ArrowUpRight={ArrowUpRight} theme={theme} />
       <About SectionTitle={SectionTitle} Card={Card} />
+      <Experience SectionTitle={SectionTitle} achievements={achievements} loading={loading} />
       <Skills SectionTitle={SectionTitle} Card={Card} grouped={grouped} loading={loading} />
       <Projects SectionTitle={SectionTitle} loading={loading} projects={projects} fallbackProjects={FALLBACK_PROJECTS} FaGithub={FaGithub} ExternalLink={ExternalLink} />
       <LazyBlog SectionTitle={SectionTitle} Card={Card} blogs={blogs} blog={blog} setBlog={setBlog} />
@@ -95,12 +98,8 @@ function HomePage() {
 
 function AppRoutes() {
   const location = useLocation();
-  useEffect(() => {
-    api.post('/analytics/pageview', { path: location.pathname }).catch(() => {});
-  }, [location.pathname]);
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<ProjectDetails />} /><Route path="/blog/:id" element={<BlogDetails />} /><Route path="*" element={<HomePage />} /></Routes>;
+  useEffect(() => { api.post('/analytics/pageview', { path: location.pathname }).catch(() => {}); }, [location.pathname]);
+  return <AnimatePresence mode="wait" initial={false}><motion.div key={location.pathname} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: .2 }}><Routes location={location}><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><ProjectDetails /></Suspense>} /><Route path="/blog/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><BlogDetails /></Suspense>} /><Route path="*" element={<HomePage />} /></Routes></motion.div></AnimatePresence>;
 }
 
-export default function App() {
-  return <AppRoutes />;
-}
+export default function App() { return <AppRoutes />; }
