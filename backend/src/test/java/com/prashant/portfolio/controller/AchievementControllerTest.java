@@ -2,6 +2,9 @@ package com.prashant.portfolio.controller;
 
 import com.prashant.portfolio.entity.Achievement;
 import com.prashant.portfolio.repository.AchievementRepository;
+import com.prashant.portfolio.repository.BlogRepository;
+import com.prashant.portfolio.repository.ProjectRepository;
+import com.prashant.portfolio.repository.SkillRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,6 +23,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AchievementControllerTest {
     @Autowired MockMvc mockMvc;
     @MockBean AchievementRepository repository;
+    @MockBean SkillRepository skillRepository;
+    @MockBean ProjectRepository projectRepository;
+    @MockBean BlogRepository blogRepository;
 
     @Test
     void returnsAchievementsSortedByDate() throws Exception {
