@@ -1,26 +1,28 @@
-import { lazy, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight, Monitor } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import api from './api/axios';
 import { useTheme } from './context/ThemeContext';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
+import Experience from './components/Experience';
 import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import SectionTitle from './components/SectionTitle';
 import Card from './components/Card';
-import CommandPalette from './components/CommandPalette';
-import ProjectDetails from './pages/ProjectDetails';
-import BlogDetails from './pages/BlogDetails';
 
 const LazyBlog = lazy(() => import('./components/Blog'));
-const NAV = ['home', 'about', 'skills', 'projects', 'blog', 'contact'];
+const LazyCommandPalette = lazy(() => import('./components/CommandPalette'));
+const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
+const BlogDetails = lazy(() => import('./pages/BlogDetails'));
+const NAV = ['home', 'about', 'experience', 'skills', 'projects', 'blog', 'contact'];
 const FALLBACK_SKILLS = [
   ['Java', 'Backend', 90], ['Spring Boot', 'Backend', 85], ['Spring Security', 'Backend', 75],
   ['JWT', 'Backend', 75], ['Hibernate/JPA', 'Backend', 80], ['MySQL', 'Database', 85],
@@ -35,16 +37,16 @@ const FALLBACK_PROJECTS = [
 function HomePage() {
   const { dark, theme: themeMode, cycleTheme } = useTheme();
   const [menu, setMenu] = useState(false), [scrolled, setScrolled] = useState(false), [progress, setProgress] = useState(0);
-  const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [blog, setBlog] = useState(null);
+  const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [achievements, setAchievements] = useState([]), [blog, setBlog] = useState(null);
   const [typed, setTyped] = useState(''), [loading, setLoading] = useState(true), [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' }), [sending, setSending] = useState(false);
   const phrases = ['Java Full Stack Developer', 'Spring Boot Developer', 'React Developer'];
 
   useEffect(() => {
     let active = true;
-    Promise.all([api.get('/projects'), api.get('/skills'), api.get('/blogs')]).then(([p, s, b]) => {
-      if (!active) return; setProjects(p.data); setSkills(s.data); setBlogs(b.data);
+    Promise.all([api.get('/projects'), api.get('/skills'), api.get('/blogs'), api.get('/achievements')]).then(([p, s, b, a]) => {
+      if (!active) return; setProjects(p.data); setSkills(s.data); setBlogs(b.data); setAchievements(a.data);
     }).catch(() => {
-      if (!active) return; setProjects(FALLBACK_PROJECTS); setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent }))); setBlogs([]);
+      if (!active) return; setProjects(FALLBACK_PROJECTS); setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent }))); setBlogs([]); setAchievements([]);
     }).finally(() => active && setLoading(false));
     return () => { active = false; };
   }, []);
@@ -78,12 +80,13 @@ function HomePage() {
   return <div className={`min-h-screen overflow-x-hidden ${theme.page}`}>
     <Helmet><title>Prashant Maurya | Java Full Stack Developer</title><meta name="description" content="Prashant Maurya — Java Full Stack Developer specializing in Java, Spring Boot, React, MySQL and AI projects." /></Helmet>
     <Toaster position="top-right" />
-    <CommandPalette go={go} />
+    <Suspense fallback={null}><LazyCommandPalette go={go} /></Suspense>
     <div className="fixed left-0 top-0 z-[100] h-1 bg-gradient-to-r from-cyan-400 to-purple-500" style={{ width: `${progress}%` }} />
     <Header nav={NAV} menu={menu} setMenu={setMenu} go={go} theme={theme} scrolled={scrolled} themeMode={themeMode} cycleTheme={cycleTheme} dark={dark} Sun={Sun} Moon={Moon} Monitor={Monitor} Menu={Menu} X={X} />
     <main>
       <Hero typed={typed} go={go} FaGithub={FaGithub} FaLinkedin={FaLinkedin} Mail={Mail} ArrowUpRight={ArrowUpRight} theme={theme} />
       <About SectionTitle={SectionTitle} Card={Card} />
+      <Experience SectionTitle={SectionTitle} achievements={achievements} loading={loading} />
       <Skills SectionTitle={SectionTitle} Card={Card} grouped={grouped} loading={loading} />
       <Projects SectionTitle={SectionTitle} loading={loading} projects={projects} fallbackProjects={FALLBACK_PROJECTS} FaGithub={FaGithub} ExternalLink={ExternalLink} />
       <LazyBlog SectionTitle={SectionTitle} Card={Card} blogs={blogs} blog={blog} setBlog={setBlog} />
@@ -95,12 +98,8 @@ function HomePage() {
 
 function AppRoutes() {
   const location = useLocation();
-  useEffect(() => {
-    api.post('/analytics/pageview', { path: location.pathname }).catch(() => {});
-  }, [location.pathname]);
-  return <Routes><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<ProjectDetails />} /><Route path="/blog/:id" element={<BlogDetails />} /><Route path="*" element={<HomePage />} /></Routes>;
+  useEffect(() => { api.post('/analytics/pageview', { path: location.pathname }).catch(() => {}); }, [location.pathname]);
+  return <AnimatePresence mode="wait" initial={false}><motion.div key={location.pathname} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: .2 }}><Routes location={location}><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><ProjectDetails /></Suspense>} /><Route path="/blog/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><BlogDetails /></Suspense>} /><Route path="*" element={<HomePage />} /></Routes></motion.div></AnimatePresence>;
 }
 
-export default function App() {
-  return <AppRoutes />;
-}
+export default function App() { return <AppRoutes />; }
