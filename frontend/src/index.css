@@ -11,4 +11,6 @@ html:not(.dark) body { background:#f8fafc; color:#111827; }
 .line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 @keyframes float { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(0,-14px,0)} }
 .animate-float { animation:float 7s ease-in-out infinite; }
-@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+@keyframes mesh-drift { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(2%, -2%, 0) scale(1.05)} }
+.hero-mesh { background:radial-gradient(circle at 18% 22%,rgba(34,211,238,.18),transparent 34%),radial-gradient(circle at 82% 72%,rgba(168,85,247,.16),transparent 36%),radial-gradient(circle at 52% 48%,rgba(59,130,246,.08),transparent 42%); filter:blur(10px); animation:mesh-drift 14s ease-in-out infinite; }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } .hero-mesh { animation:none; } }
