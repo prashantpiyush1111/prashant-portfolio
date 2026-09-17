@@ -39,43 +39,13 @@ jobs:
         with:
           node-version: 22
 
-      - name: Frontend fresh install, pin, and build
+      - name: Frontend fresh install and build
         id: frontend
         working-directory: frontend
         run: |
           npm install
           npm ls --depth=0
-          node <<'NODE'
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          const tree = require('./node_modules/.package-lock.json');
-          const resolved = tree.packages || {};
-          for (const section of ['dependencies', 'devDependencies']) {
-            for (const name of Object.keys(pkg[section] || {})) {
-              const entry = resolved[`node_modules/${name}`];
-              if (!entry?.version) throw new Error(`Could not resolve ${name}`);
-              pkg[section][name] = `^${entry.version}`;
-            }
-          }
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          NODE
-          rm -rf node_modules package-lock.json
-          npm install
-          npm ls --depth=0
           npm run build
-
-      - name: Commit pinned dependency manifest
-        if: steps.frontend.outcome == 'success' && github.event_name == 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- frontend/package.json frontend/package-lock.json; then
-            echo "Dependency manifest already pinned."
-          else
-            git add frontend/package.json frontend/package-lock.json
-            git commit -m "chore: pin frontend dependency versions [skip ci]"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
 
       - name: Setup Java
         id: java
