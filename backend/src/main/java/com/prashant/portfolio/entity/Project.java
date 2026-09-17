@@ -26,6 +26,15 @@ public class Project {
     private String liveDemoUrl;
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String challenge;
+
+    @Column(columnDefinition = "TEXT")
+    private String solution;
+
+    @Column(columnDefinition = "TEXT")
+    private String impact;
+
     @ElementCollection
     @CollectionTable(name = "project_image_urls", joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "image_url", nullable = false)
