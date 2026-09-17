@@ -2,6 +2,7 @@ package com.prashant.portfolio.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prashant.portfolio.entity.Project;
+import com.prashant.portfolio.repository.AchievementRepository;
 import com.prashant.portfolio.repository.BlogRepository;
 import com.prashant.portfolio.repository.ProjectRepository;
 import com.prashant.portfolio.repository.SkillRepository;
@@ -27,12 +28,10 @@ class ProjectControllerTest {
     @MockBean ProjectService service;
     @MockBean GithubStatsService githubStatsService;
 
-    // PortfolioApplication declares the seedData CommandLineRunner as a @Bean.
-    // WebMvcTest does not load JPA repositories, so provide test doubles for
-    // the runner's dependencies without changing production startup behavior.
     @MockBean SkillRepository skillRepository;
     @MockBean ProjectRepository projectRepository;
     @MockBean BlogRepository blogRepository;
+    @MockBean AchievementRepository achievementRepository;
 
     @Test void getAllProjectsReturnsOk() throws Exception {
         when(service.getAllProjects()).thenReturn(List.of(new Project()));
