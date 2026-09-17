@@ -49,7 +49,7 @@ function HomePage() {
     }).catch(() => {
       if (!active) return; setProjects(FALLBACK_PROJECTS); setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent }))); setBlogs([]); setAchievements([]);
     }).finally(() => active && setLoading(false));
-    api.get('/github/contributions').then(({ data }) => active && setGithubActivity(data)).catch(() => {});
+    api.get('/github/activity').then(({ data }) => active && setGithubActivity(data)).catch(() => {});
     return () => { active = false; };
   }, []);
 
