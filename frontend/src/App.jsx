@@ -30,15 +30,15 @@ const FALLBACK_SKILLS = [
   ['React.js', 'Frontend', 75], ['Git', 'Tools', 85], ['Maven', 'Tools', 80], ['Postman', 'Tools', 80]
 ];
 const FALLBACK_PROJECTS = [
-  { id: 1, title: 'AI-Driven Sales Forecasting', description: 'AI-powered sales forecasting platform with business intelligence dashboards and predictive insights.', techStack: 'Java, Spring Boot, MySQL, React, Python, FastAPI', githubUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', liveDemoUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', imageUrl: '/projects/ai-sales-forecasting.png' },
-  { id: 2, title: 'RAG Educational Assistant', description: 'Educational assistant that retrieves relevant knowledge and generates grounded answers from learning resources.', techStack: 'Java, Spring Boot, React, Python, RAG, Qdrant', githubUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', imageUrl: '/projects/rag-educational-assistant.png' },
-  { id: 3, title: 'Task Management System', description: 'Jira-style task management system with assignments, role-based permissions, deadlines, and collaboration.', techStack: 'Java, Spring Boot, MySQL, React, JWT', githubUrl: 'https://github.com/prashantpiyush1111/task-management-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/task-management-system', imageUrl: '/projects/task-management-system.png' }
+  { id: 1, title: 'AI-Driven Sales Forecasting', description: 'AI-powered sales forecasting platform with business intelligence dashboards and predictive insights.', techStack: 'Java, Spring Boot, MySQL, React, Python, FastAPI', githubUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', liveDemoUrl: 'https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting', imageUrl: '/projects/ai-sales-forecasting.png', imageLqipUrl: '/projects/ai-sales-forecasting-lqip.jpg' },
+  { id: 2, title: 'RAG Educational Assistant', description: 'Educational assistant that retrieves relevant knowledge and generates grounded answers from learning resources.', techStack: 'Java, Spring Boot, React, Python, RAG, Qdrant', githubUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/rag-educational-system', imageUrl: '/projects/rag-educational-assistant.png', imageLqipUrl: '/projects/rag-educational-assistant-lqip.jpg' },
+  { id: 3, title: 'Task Management System', description: 'Jira-style task management system with assignments, role-based permissions, deadlines, and collaboration.', techStack: 'Java, Spring Boot, MySQL, React, JWT', githubUrl: 'https://github.com/prashantpiyush1111/task-management-system', liveDemoUrl: 'https://github.com/prashantpiyush1111/task-management-system', imageUrl: '/projects/task-management-system.png', imageLqipUrl: '/projects/task-management-system-lqip.jpg' }
 ];
 
 function HomePage() {
   const { dark, theme: themeMode, cycleTheme } = useTheme();
   const [menu, setMenu] = useState(false), [scrolled, setScrolled] = useState(false), [progress, setProgress] = useState(0);
-  const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [achievements, setAchievements] = useState([]), [blog, setBlog] = useState(null);
+  const [projects, setProjects] = useState([]), [skills, setSkills] = useState([]), [blogs, setBlogs] = useState([]), [achievements, setAchievements] = useState([]), [blog, setBlog] = useState(null), [githubActivity, setGithubActivity] = useState(null);
   const [typed, setTyped] = useState(''), [loading, setLoading] = useState(true), [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' }), [sending, setSending] = useState(false);
   const phrases = ['Java Full Stack Developer', 'Spring Boot Developer', 'React Developer'];
 
@@ -49,6 +49,7 @@ function HomePage() {
     }).catch(() => {
       if (!active) return; setProjects(FALLBACK_PROJECTS); setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent }))); setBlogs([]); setAchievements([]);
     }).finally(() => active && setLoading(false));
+    api.get('/github/contributions').then(({ data }) => active && setGithubActivity(data)).catch(() => {});
     return () => { active = false; };
   }, []);
 
@@ -88,7 +89,7 @@ function HomePage() {
       <Hero typed={typed} go={go} FaGithub={FaGithub} FaLinkedin={FaLinkedin} Mail={Mail} ArrowUpRight={ArrowUpRight} theme={theme} />
       <About SectionTitle={SectionTitle} Card={Card} />
       <Experience SectionTitle={SectionTitle} achievements={achievements} loading={loading} />
-      <Skills SectionTitle={SectionTitle} Card={Card} grouped={grouped} loading={loading} />
+      <Skills SectionTitle={SectionTitle} Card={Card} grouped={grouped} loading={loading} githubActivity={githubActivity} />
       <Projects SectionTitle={SectionTitle} loading={loading} projects={projects} fallbackProjects={FALLBACK_PROJECTS} FaGithub={FaGithub} ExternalLink={ExternalLink} />
       <LazyBlog SectionTitle={SectionTitle} Card={Card} blogs={blogs} blog={blog} setBlog={setBlog} />
       <Contact SectionTitle={SectionTitle} Card={Card} theme={theme} form={form} updateField={updateField} submit={submit} sending={sending} />
