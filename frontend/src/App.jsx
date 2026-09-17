@@ -17,9 +17,9 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import SectionTitle from './components/SectionTitle';
 import Card from './components/Card';
-import CommandPalette from './components/CommandPalette';
 
 const LazyBlog = lazy(() => import('./components/Blog'));
+const LazyCommandPalette = lazy(() => import('./components/CommandPalette'));
 const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
 const BlogDetails = lazy(() => import('./pages/BlogDetails'));
 const NAV = ['home', 'about', 'experience', 'skills', 'projects', 'blog', 'contact'];
@@ -80,7 +80,7 @@ function HomePage() {
   return <div className={`min-h-screen overflow-x-hidden ${theme.page}`}>
     <Helmet><title>Prashant Maurya | Java Full Stack Developer</title><meta name="description" content="Prashant Maurya — Java Full Stack Developer specializing in Java, Spring Boot, React, MySQL and AI projects." /></Helmet>
     <Toaster position="top-right" />
-    <CommandPalette go={go} />
+    <Suspense fallback={null}><LazyCommandPalette go={go} /></Suspense>
     <div className="fixed left-0 top-0 z-[100] h-1 bg-gradient-to-r from-cyan-400 to-purple-500" style={{ width: `${progress}%` }} />
     <Header nav={NAV} menu={menu} setMenu={setMenu} go={go} theme={theme} scrolled={scrolled} themeMode={themeMode} cycleTheme={cycleTheme} dark={dark} Sun={Sun} Moon={Moon} Monitor={Monitor} Menu={Menu} X={X} />
     <main>
