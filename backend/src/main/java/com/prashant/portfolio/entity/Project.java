@@ -1,10 +1,19 @@
 package com.prashant.portfolio.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
+import jakarta.persistence.Table;
+import lombok.Data;
 
 @Data
 @Entity
@@ -37,6 +46,7 @@ public class Project {
 
     @ElementCollection
     @CollectionTable(name = "project_image_urls", joinColumns = @JoinColumn(name = "project_id"))
+    @OrderColumn(name = "image_order")
     @Column(name = "image_url", nullable = false)
     private List<String> imageUrls = new ArrayList<>();
 
