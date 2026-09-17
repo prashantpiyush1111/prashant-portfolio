@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CommandPalette from '../components/CommandPalette';
 import ProjectDetails from '../pages/ProjectDetails';
 import BlogDetails from '../pages/BlogDetails';
+import NotFound from '../pages/NotFound';
 
 const { get, post } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }));
 vi.mock('../api/axios', () => ({ default: { get, post } }));
@@ -41,5 +42,11 @@ describe('advanced portfolio features', () => {
     expect(await screen.findByRole('heading', { name: 'Spring Tips' })).toBeInTheDocument();
     expect(screen.getByText('Clean APIs')).toBeInTheDocument();
     expect(screen.getByText('services')).toBeInTheDocument();
+  });
+
+  it('renders a friendly not-found page with a home link', () => {
+    render(<HelmetProvider><MemoryRouter initialEntries={['/missing']}><Routes><Route path="*" element={<NotFound />} /></Routes></MemoryRouter></HelmetProvider>);
+    expect(screen.getByRole('heading', { name: 'This page took a wrong turn.' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Go back home/i })).toHaveAttribute('href', '/');
   });
 });
