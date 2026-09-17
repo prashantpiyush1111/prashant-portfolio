@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { Mail, Moon, Sun, Menu, X, ExternalLink, ArrowUpRight, Monitor } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
@@ -100,7 +100,12 @@ function HomePage() {
 
 function AppRoutes() {
   const location = useLocation();
-  useEffect(() => { api.post('/analytics/pageview', { path: location.pathname }).catch(() => {}); }, [location.pathname]);
+  const sentPaths = useRef(new Set());
+  useEffect(() => {
+    if (sentPaths.current.has(location.pathname)) return;
+    sentPaths.current.add(location.pathname);
+    api.post('/analytics/pageview', { path: location.pathname }).catch(() => {});
+  }, [location.pathname]);
   return <AnimatePresence mode="wait" initial={false}><motion.div key={location.pathname} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: .2 }}><Routes location={location}><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><ProjectDetails /></Suspense>} /><Route path="/blog/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><BlogDetails /></Suspense>} /><Route path="*" element={<NotFound />} /></Routes></motion.div></AnimatePresence>;
 }
 
