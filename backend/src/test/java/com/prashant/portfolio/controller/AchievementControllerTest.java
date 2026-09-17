@@ -1,5 +1,6 @@
 package com.prashant.portfolio.controller;
 
+import com.prashant.portfolio.config.WebConfig;
 import com.prashant.portfolio.entity.Achievement;
 import com.prashant.portfolio.repository.AchievementRepository;
 import com.prashant.portfolio.repository.BlogRepository;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,7 +21,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AchievementController.class)
+@WebMvcTest(value = AchievementController.class, excludeFilters = @ComponentScan.Filter(type = ComponentScan.FilterType.ASSIGNABLE_TYPE, classes = WebConfig.class))
 class AchievementControllerTest {
     @Autowired MockMvc mockMvc;
     @MockBean AchievementRepository repository;
