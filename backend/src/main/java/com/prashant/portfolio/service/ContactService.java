@@ -13,6 +13,8 @@ import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class ContactService {
+    private static final org.slf4j.Logger log =
+        org.slf4j.LoggerFactory.getLogger(ContactService.class);
     private final ContactMessageRepository repository;
     private final JavaMailSender mailSender;
     private final JavaMailSender brevoMailSender;
@@ -61,8 +63,8 @@ public class ContactService {
                     + "Email: " + request.getEmail() + "\n\n"
                     + request.getMessage());
             mailSender.send(email);
-        } catch (Exception ignored) {
-            // Contact message is already saved.
+        } catch (Exception e) {
+            log.error("Admin notification email failed", e);
         }
     }
 
@@ -79,8 +81,8 @@ public class ContactService {
                     + "I have received your message and will get back to you soon.\n\n"
                     + "Regards,\nPrashant Maurya");
             brevoMailSender.send(email);
-        } catch (Exception ignored) {
-            // Confirmation email failure must not fail the API request.
+        } catch (Exception e) {
+            log.error("Confirmation email failed", e);
         }
     }
 }
