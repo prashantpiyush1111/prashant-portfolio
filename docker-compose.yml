@@ -29,6 +29,12 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_TO: ${MAIL_TO:-}
+      BREVO_SMTP_HOST: ${BREVO_SMTP_HOST:-}
+      BREVO_SMTP_PORT: ${BREVO_SMTP_PORT:-587}
+      BREVO_SMTP_USERNAME: ${BREVO_SMTP_USERNAME:-}
+      BREVO_SMTP_PASSWORD: ${BREVO_SMTP_PASSWORD:-}
+      BREVO_FROM_EMAIL: ${BREVO_FROM_EMAIL:-}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-}
     depends_on:
       mysql:
         condition: service_healthy
