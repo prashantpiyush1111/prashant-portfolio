@@ -42,19 +42,23 @@ public class ContactRateLimitFilter extends OncePerRequestFilter {
         String ip = clientIp(request);
         long now = Instant.now().getEpochSecond();
         Deque<Long> timestamps = requests.computeIfAbsent(ip, ignored -> new ArrayDeque<>());
+
         synchronized (timestamps) {
             while (!timestamps.isEmpty() && now - timestamps.peekFirst() >= WINDOW_SECONDS) {
                 timestamps.removeFirst();
             }
+
             if (timestamps.size() >= MAX_REQUESTS) {
                 response.setStatus(429);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 addCorsHeaderIfAllowed(request, response);
-                response.getWriter().write("{"success":false,"message":"Too many contact requests. Please try again later."}");
+                response.getWriter().write("{\"success\":false,\"message\":\"Too many contact requests. Please try again later.\"}");
                 return;
             }
+
             timestamps.addLast(now);
         }
+
         filterChain.doFilter(request, response);
     }
 
