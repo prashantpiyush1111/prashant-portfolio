@@ -4,26 +4,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
 import com.prashant.portfolio.dto.ContactRequestDto;
 import com.prashant.portfolio.entity.ContactMessage;
 import com.prashant.portfolio.repository.ContactMessageRepository;
-
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class ContactService {
-
     private final ContactMessageRepository repository;
-
-    // Gmail → Admin notification
     private final JavaMailSender mailSender;
-
-    // Brevo → Visitor confirmation
     private final JavaMailSender brevoMailSender;
-
     private final String mailTo;
     private final String mailUsername;
     private final String brevoFromEmail;
@@ -34,8 +26,7 @@ public class ContactService {
             @Qualifier("brevoMailSender") JavaMailSender brevoMailSender,
             @Value("${portfolio.mail.to:}") String mailTo,
             @Value("${spring.mail.username:}") String mailUsername,
-            @Value("${BREVO_FROM_EMAIL}") String brevoFromEmail) {
-
+            @Value("${BREVO_FROM_EMAIL:}") String brevoFromEmail) {
         this.repository = repository;
         this.mailSender = mailSender;
         this.brevoMailSender = brevoMailSender;
@@ -45,100 +36,57 @@ public class ContactService {
     }
 
     public void save(ContactRequestDto request) {
+        if (request.getWebsite() != null && !request.getWebsite().isBlank()) return;
 
         ContactMessage message = new ContactMessage();
-
         message.setName(request.getName());
         message.setEmail(request.getEmail());
         message.setSubject(request.getSubject());
         message.setMessage(request.getMessage());
-
         repository.save(message);
 
-        // Gmail → Admin
         sendAdminNotification(request);
-
-        // Brevo → Visitor
         sendConfirmation(request);
     }
 
     private void sendAdminNotification(ContactRequestDto request) {
-
-        if (mailTo == null || mailTo.isBlank()) {
-            return;
-        }
-
+        if (mailTo == null || mailTo.isBlank() || mailUsername == null || mailUsername.isBlank()) return;
         try {
-
             MimeMessage email = mailSender.createMimeMessage();
+            email.setFrom(new InternetAddress(mailUsername, "Prashant Maurya | Portfolio"));
+            email.setRecipients(Message.RecipientType.TO, mailTo);
+            email.setReplyTo(new InternetAddress[]{new InternetAddress(request.getEmail())});
+            email.setSubject("Portfolio Contact: " + request.getSubject());
+            email.setText("Name: " + request.getName() + "
+"
+                    + "Email: " + request.getEmail() + "
 
-            email.setFrom(new InternetAddress(
-                    mailUsername,
-                    "Prashant Maurya | Portfolio"
-            ));
-
-            email.setRecipients(
-                    Message.RecipientType.TO,
-                    mailTo
-            );
-
-            email.setReplyTo(
-                    new InternetAddress[]{
-                            new InternetAddress(request.getEmail())
-                    }
-            );
-
-            email.setSubject(
-                    "Portfolio Contact: " + request.getSubject()
-            );
-
-            email.setText(
-                    "Name: " + request.getName() + "\n"
-                    + "Email: " + request.getEmail() + "\n\n"
-                    + request.getMessage()
-            );
-
+"
+                    + request.getMessage());
             mailSender.send(email);
-
         } catch (Exception ignored) {
             // Contact message is already saved.
         }
     }
 
     private void sendConfirmation(ContactRequestDto request) {
-
-        if (request.getEmail() == null || request.getEmail().isBlank()) {
-            return;
-        }
-
+        if (request.getEmail() == null || request.getEmail().isBlank()
+                || brevoFromEmail == null || brevoFromEmail.isBlank()) return;
         try {
-
             MimeMessage email = brevoMailSender.createMimeMessage();
+            email.setFrom(new InternetAddress(brevoFromEmail, "Prashant Maurya | Portfolio"));
+            email.setRecipients(Message.RecipientType.TO, request.getEmail());
+            email.setSubject("Thanks for reaching out to Prashant Maurya");
+            email.setText("Hi " + request.getName() + ",
 
-            email.setFrom(new InternetAddress(
-                    brevoFromEmail,
-                    "Prashant Maurya | Portfolio"
-            ));
-
-            email.setRecipients(
-                    Message.RecipientType.TO,
-                    request.getEmail()
-            );
-
-            email.setSubject(
-                    "Thanks for reaching out to Prashant Maurya"
-            );
-
-            email.setText(
-                    "Hi " + request.getName() + ",\n\n"
+"
                     + "Thanks for reaching out through my portfolio. "
-                    + "I have received your message and will get back to you soon.\n\n"
-                    + "Regards,\n"
-                    + "Prashant Maurya"
-            );
+                    + "I have received your message and will get back to you soon.
 
+"
+                    + "Regards,
+Prashant Maurya");
             brevoMailSender.send(email);
-
         } catch (Exception ignored) {
             // Confirmation email failure must not fail the API request.
         }
