@@ -18,10 +18,10 @@ public class ContactService {
 
     private final ContactMessageRepository repository;
 
-    // Gmail → admin notification
+    // Gmail → Admin notification
     private final JavaMailSender mailSender;
 
-    // Brevo → visitor confirmation
+    // Brevo → Visitor confirmation
     private final JavaMailSender brevoMailSender;
 
     private final String mailTo;
@@ -30,7 +30,7 @@ public class ContactService {
 
     public ContactService(
             ContactMessageRepository repository,
-            @Qualifier("mailSender") JavaMailSender mailSender,
+            @Qualifier("gmailMailSender") JavaMailSender mailSender,
             @Qualifier("brevoMailSender") JavaMailSender brevoMailSender,
             @Value("${portfolio.mail.to:}") String mailTo,
             @Value("${spring.mail.username:}") String mailUsername,
@@ -47,6 +47,7 @@ public class ContactService {
     public void save(ContactRequestDto request) {
 
         ContactMessage message = new ContactMessage();
+
         message.setName(request.getName());
         message.setEmail(request.getEmail());
         message.setSubject(request.getSubject());
@@ -54,7 +55,10 @@ public class ContactService {
 
         repository.save(message);
 
+        // Gmail → Admin
         sendAdminNotification(request);
+
+        // Brevo → Visitor
         sendConfirmation(request);
     }
 
@@ -65,6 +69,7 @@ public class ContactService {
         }
 
         try {
+
             MimeMessage email = mailSender.createMimeMessage();
 
             email.setFrom(new InternetAddress(
@@ -107,6 +112,7 @@ public class ContactService {
         }
 
         try {
+
             MimeMessage email = brevoMailSender.createMimeMessage();
 
             email.setFrom(new InternetAddress(
