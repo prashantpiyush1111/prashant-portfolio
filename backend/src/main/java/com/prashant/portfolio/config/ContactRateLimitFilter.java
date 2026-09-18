@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayDeque;
@@ -44,12 +43,14 @@ public class ContactRateLimitFilter extends OncePerRequestFilter {
         long now = Instant.now().getEpochSecond();
         Deque<Long> timestamps = requests.computeIfAbsent(ip, ignored -> new ArrayDeque<>());
         synchronized (timestamps) {
-            while (!timestamps.isEmpty() && now - timestamps.peekFirst() >= WINDOW_SECONDS) timestamps.removeFirst();
+            while (!timestamps.isEmpty() && now - timestamps.peekFirst() >= WINDOW_SECONDS) {
+                timestamps.removeFirst();
+            }
             if (timestamps.size() >= MAX_REQUESTS) {
                 response.setStatus(429);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 addCorsHeaderIfAllowed(request, response);
-                response.getWriter().write("{\"success\":false,\"message\":\"Too many contact requests. Please try again later.\"}");
+                response.getWriter().write("{"success":false,"message":"Too many contact requests. Please try again later."}");
                 return;
             }
             timestamps.addLast(now);
@@ -65,7 +66,7 @@ public class ContactRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        return forwarded == null || forwarded.isBlank() ? request.getRemoteAddr() : forwarded.split(",")[0].trim();
+        String remoteAddr = request.getRemoteAddr();
+        return remoteAddr == null || remoteAddr.isBlank() ? "unknown" : remoteAddr;
     }
 }
