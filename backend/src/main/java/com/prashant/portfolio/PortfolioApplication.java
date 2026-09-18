@@ -38,16 +38,16 @@ public class PortfolioApplication {
             // =========================
 
             List<Skill> seedSkills = List.of(
-                    skill("Java", "Backend", 90),
-                    skill("Spring Boot", "Backend", 85),
+                    skill("Java", "Backend", 85),
+                    skill("Spring Boot", "Backend", 75),
                     skill("Spring Security", "Backend", 75),
                     skill("JWT", "Backend", 75),
-                    skill("Hibernate/JPA", "Backend", 80),
-                    skill("MySQL", "Database", 85),
+                    skill("Hibernate/JPA", "Backend", 70),
+                    skill("MySQL", "Database", 65),
                     skill("React.js", "Frontend", 75),
                     skill("Git", "Tools", 85),
                     skill("Maven", "Tools", 80),
-                    skill("Postman", "Tools", 80)
+                    skill("Postman", "Tools", 70)
             );
 
             seedSkills.stream()
