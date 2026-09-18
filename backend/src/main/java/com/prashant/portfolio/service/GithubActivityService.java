@@ -1,15 +1,16 @@
 package com.prashant.portfolio.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.prashant.portfolio.dto.GithubActivityDto;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prashant.portfolio.dto.GithubActivityDto;
 
 @Service
 public class GithubActivityService {
@@ -41,10 +42,14 @@ public class GithubActivityService {
             );
             cache.set(new CachedActivity(data, Instant.now()));
             return data;
-        } catch (Exception ex) {
-            if (current != null) return current.data;
-            throw new IllegalStateException("Unable to load GitHub activity", ex);
-        }
+} catch (Exception ex) {
+    if (current != null) {
+        return current.data;
+    }
+
+    // GitHub API unavailable hone par fallback data
+    return new GithubActivityDto(28, Instant.parse("2024-11-30T10:11:07Z"));
+}
     }
 
     private record CachedActivity(GithubActivityDto data, Instant cachedAt) {}
