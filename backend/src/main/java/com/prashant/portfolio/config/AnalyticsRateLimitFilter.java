@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +33,7 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
         String ip = clientIp(request);
         long now = System.currentTimeMillis();
         Long previous = lastRequestByIp.putIfAbsent(ip, now);
@@ -41,7 +41,7 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             addCorsHeaderIfAllowed(request, response);
-            response.getWriter().write("{\"success\":false,\"message\":\"Too many requests\"}");
+            response.getWriter().write("{"success":false,"message":"Too many requests"}");
             return;
         }
         lastRequestByIp.put(ip, now);
@@ -56,7 +56,7 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        return forwarded == null || forwarded.isBlank() ? request.getRemoteAddr() : forwarded.split(",")[0].trim();
+        String remoteAddr = request.getRemoteAddr();
+        return remoteAddr == null || remoteAddr.isBlank() ? "unknown" : remoteAddr;
     }
 }
