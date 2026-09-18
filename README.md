@@ -20,6 +20,33 @@ Optional environment variables:
 - `DB_USERNAME`
 - `DB_PASSWORD`
 
+
+## Environment variables
+
+### Backend / deployment
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `ALLOWED_ORIGIN`
+- `MAIL_HOST`
+- `MAIL_PORT`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+- `MAIL_TO`
+- `BREVO_SMTP_HOST` (optional)
+- `BREVO_SMTP_PORT` (optional, defaults to 587)
+- `BREVO_SMTP_USERNAME` (optional)
+- `BREVO_SMTP_PASSWORD` (optional)
+- `BREVO_FROM_EMAIL` (optional)
+- `ADMIN_API_KEY`
+- `SPRING_PROFILES_ACTIVE` (optional)
+
+Brevo settings are optional at startup. If they are not configured, visitor confirmation email is skipped; the contact message can still be saved and the Gmail admin notification can still work when Gmail settings are configured.
+
+### Frontend
+- `VITE_API_BASE_URL`
+- `VITE_SITE_URL`
+
 ## Backend
 ```bash
 cd backend
