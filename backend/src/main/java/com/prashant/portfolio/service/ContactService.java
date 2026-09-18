@@ -1,7 +1,7 @@
 package com.prashant.portfolio.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
@@ -17,20 +17,31 @@ import jakarta.mail.internet.MimeMessage;
 public class ContactService {
 
     private final ContactMessageRepository repository;
+
+    // Gmail → admin notification
     private final JavaMailSender mailSender;
+
+    // Brevo → visitor confirmation
+    private final JavaMailSender brevoMailSender;
+
     private final String mailTo;
     private final String mailUsername;
+    private final String brevoFromEmail;
 
     public ContactService(
             ContactMessageRepository repository,
-            JavaMailSender mailSender,
+            @Qualifier("mailSender") JavaMailSender mailSender,
+            @Qualifier("brevoMailSender") JavaMailSender brevoMailSender,
             @Value("${portfolio.mail.to:}") String mailTo,
-            @Value("${spring.mail.username:}") String mailUsername) {
+            @Value("${spring.mail.username:}") String mailUsername,
+            @Value("${BREVO_FROM_EMAIL}") String brevoFromEmail) {
 
         this.repository = repository;
         this.mailSender = mailSender;
+        this.brevoMailSender = brevoMailSender;
         this.mailTo = mailTo;
         this.mailUsername = mailUsername;
+        this.brevoFromEmail = brevoFromEmail;
     }
 
     public void save(ContactRequestDto request) {
@@ -85,8 +96,7 @@ public class ContactService {
             mailSender.send(email);
 
         } catch (Exception ignored) {
-            // Contact message is already saved;
-            // email failure must not fail the API request.
+            // Contact message is already saved.
         }
     }
 
@@ -97,9 +107,17 @@ public class ContactService {
         }
 
         try {
-            SimpleMailMessage email = new SimpleMailMessage();
+            MimeMessage email = brevoMailSender.createMimeMessage();
 
-            email.setTo(request.getEmail());
+            email.setFrom(new InternetAddress(
+                    brevoFromEmail,
+                    "Prashant Maurya | Portfolio"
+            ));
+
+            email.setRecipients(
+                    Message.RecipientType.TO,
+                    request.getEmail()
+            );
 
             email.setSubject(
                     "Thanks for reaching out to Prashant Maurya"
@@ -113,7 +131,7 @@ public class ContactService {
                     + "Prashant Maurya"
             );
 
-            mailSender.send(email);
+            brevoMailSender.send(email);
 
         } catch (Exception ignored) {
             // Confirmation email failure must not fail the API request.

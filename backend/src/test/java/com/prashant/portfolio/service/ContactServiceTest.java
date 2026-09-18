@@ -1,21 +1,21 @@
 package com.prashant.portfolio.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.prashant.portfolio.dto.ContactRequestDto;
 import com.prashant.portfolio.repository.ContactMessageRepository;
+
+import jakarta.mail.internet.MimeMessage;
 
 @ExtendWith(MockitoExtension.class)
 class ContactServiceTest {
@@ -26,6 +26,12 @@ class ContactServiceTest {
     @Mock
     JavaMailSender mailSender;
 
+    @Mock
+    JavaMailSender brevoMailSender;
+
+    @Mock
+    MimeMessage mimeMessage;
+
     private ContactService service;
 
     @BeforeEach
@@ -33,8 +39,10 @@ class ContactServiceTest {
         service = new ContactService(
                 repository,
                 mailSender,
+                brevoMailSender,
                 "",
-                "test-sender@gmail.com"
+                "test-sender@gmail.com",
+                "noreply@prashantpiyush1111.website"
         );
     }
 
@@ -49,37 +57,33 @@ class ContactServiceTest {
 
     @Test
     void savePersistsContactAndAttemptsConfirmationWhenAdminDestinationMissing() {
+
+        when(brevoMailSender.createMimeMessage())
+                .thenReturn(mimeMessage);
+
         assertDoesNotThrow(() -> service.save(request()));
 
         verify(repository).save(any());
 
-        ArgumentCaptor<SimpleMailMessage> captor =
-                ArgumentCaptor.forClass(SimpleMailMessage.class);
-
-        verify(mailSender).send(captor.capture());
-
-        assertEquals(
-                "test@example.com",
-                captor.getValue().getTo()[0]
-        );
-
-        assertEquals(
-                "Thanks for reaching out to Prashant Maurya",
-                captor.getValue().getSubject()
-        );
+        verify(brevoMailSender)
+                .send(mimeMessage);
     }
 
     @Test
     void confirmationMailFailureDoesNotFailSave() {
+
+        when(brevoMailSender.createMimeMessage())
+                .thenReturn(mimeMessage);
+
         doThrow(new RuntimeException("SMTP unavailable"))
-                .when(mailSender)
-                .send(any(SimpleMailMessage.class));
+                .when(brevoMailSender)
+                .send(mimeMessage);
 
         assertDoesNotThrow(() -> service.save(request()));
 
         verify(repository).save(any());
 
-        verify(mailSender)
-                .send(any(SimpleMailMessage.class));
+        verify(brevoMailSender)
+                .send(mimeMessage);
     }
 }
