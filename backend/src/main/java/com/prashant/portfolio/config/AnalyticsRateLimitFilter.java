@@ -37,13 +37,15 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
         String ip = clientIp(request);
         long now = System.currentTimeMillis();
         Long previous = lastRequestByIp.putIfAbsent(ip, now);
+
         if (previous != null && now - previous < 1000) {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             addCorsHeaderIfAllowed(request, response);
-            response.getWriter().write("{"success":false,"message":"Too many requests"}");
+            response.getWriter().write("{\"success\":false,\"message\":\"Too many requests\"}");
             return;
         }
+
         lastRequestByIp.put(ip, now);
         filterChain.doFilter(request, response);
     }
