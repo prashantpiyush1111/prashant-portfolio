@@ -27,6 +27,8 @@ export default defineConfig([
       'react-refresh': reactRefresh,
     },
     rules: {
+      // Core no-unused-vars does not treat JSX component tags as variable references.
+      'no-unused-vars': 'off',
       'react-refresh/only-export-components': 'warn',
     },
   },
