@@ -14,4 +14,5 @@ public class Blog {
     @Column(columnDefinition = "TEXT") private String content;
     private LocalDate publishedDate;
     private String thumbnailUrl;
+    @Column(name = "thumbnail_lqip_url") private String thumbnailLqipUrl;
 }
