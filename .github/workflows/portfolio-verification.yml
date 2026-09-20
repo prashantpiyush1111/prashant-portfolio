@@ -108,7 +108,21 @@ jobs:
           wait $PID 2>/dev/null || true
           trap - EXIT
 
-      - name: Persist verification outcome
+      - name: Publish verification summary
+        if: always()
+        run: |
+          {
+            echo '# Portfolio verification outcome'
+            echo
+            echo "- Frontend fresh install + build: ${FRONTEND_OUTCOME}"
+            echo "- Backend Maven build: ${BACKEND_BUILD_OUTCOME}"
+            echo "- Backend restart twice + 10 skills twice: ${BACKEND_RESTART_OUTCOME}"
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          FRONTEND_OUTCOME: ${{ steps.frontend.outcome }}
+          BACKEND_BUILD_OUTCOME: ${{ steps.backend_build.outcome }}
+          BACKEND_RESTART_OUTCOME: ${{ steps.backend_restart.outcome }}
+
         if: always()
         run: |
           {
