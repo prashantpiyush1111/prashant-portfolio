@@ -34,6 +34,8 @@ public class Project {
     private String githubUrl;
     private String liveDemoUrl;
     private String imageUrl;
+    @Column(name = "image_lqip_url")
+    private String imageLqipUrl;
 
     @Column(columnDefinition = "TEXT")
     private String challenge;
