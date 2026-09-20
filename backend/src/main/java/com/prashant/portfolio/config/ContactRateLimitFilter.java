@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ContactRateLimitFilter extends OncePerRequestFilter {
     private static final int MAX_REQUESTS = 5;
     private static final long WINDOW_SECONDS = 3600;
+    private static final int CLEANUP_THRESHOLD = 10_000;
     private final Map<String, Deque<Long>> requests = new ConcurrentHashMap<>();
     private final String[] allowedOrigins;
 
@@ -39,6 +40,7 @@ public class ContactRateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
+        cleanupIfNeeded();
         String ip = clientIp(request);
         long now = Instant.now().getEpochSecond();
         Deque<Long> timestamps = requests.computeIfAbsent(ip, ignored -> new ArrayDeque<>());
@@ -60,6 +62,20 @@ public class ContactRateLimitFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void cleanupIfNeeded() {
+        if (requests.size() <= CLEANUP_THRESHOLD) return;
+        long cutoff = Instant.now().getEpochSecond() - WINDOW_SECONDS;
+        requests.entrySet().removeIf(entry -> {
+            Deque<Long> timestamps = entry.getValue();
+            synchronized (timestamps) {
+                while (!timestamps.isEmpty() && cutoff - timestamps.peekFirst() >= 0) {
+                    timestamps.removeFirst();
+                }
+                return timestamps.isEmpty();
+            }
+        });
     }
 
     private void addCorsHeaderIfAllowed(HttpServletRequest request, HttpServletResponse response) {
