@@ -69,6 +69,7 @@ public class PortfolioApplication {
                             "https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting",
                             "",
                             "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+                            "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
                             true,
                             List.of(
                                     "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80"
@@ -84,6 +85,7 @@ public class PortfolioApplication {
                             "Java, Spring Boot, React, Python, RAG, Qdrant",
                             "https://github.com/prashantpiyush1111/rag-educational-system",
                             "",
+                            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
                             "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
                             true,
                             List.of(
@@ -101,6 +103,7 @@ public class PortfolioApplication {
                             "https://github.com/prashantpiyush1111/task-management-system",
                             "https://workflowpi.online/",
                             "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
+                            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
                             false,
                             List.of(
                                     "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
@@ -111,59 +114,9 @@ public class PortfolioApplication {
                     )
             );
 
-            /*
-             * Update existing projects by title.
-             * If a project does not exist, create it.
-             */
-
-            List<Project> existingProjects = projectRepository.findAll();
-
-            for (Project seed : seedProjects) {
-
-                existingProjects.stream()
-                        .filter(existing ->
-                                existing.getTitle()
-                                        .equalsIgnoreCase(seed.getTitle()))
-                        .findFirst()
-                        .ifPresentOrElse(
-                                existing -> {
-
-                                    existing.setDescription(
-                                            seed.getDescription());
-
-                                    existing.setTechStack(
-                                            seed.getTechStack());
-
-                                    existing.setGithubUrl(
-                                            seed.getGithubUrl());
-
-                                    existing.setLiveDemoUrl(
-                                            seed.getLiveDemoUrl());
-
-                                    existing.setImageUrl(
-                                            seed.getImageUrl());
-
-                                    existing.setImageUrls(
-                                            seed.getImageUrls());
-
-                                    existing.setFeatured(
-                                            seed.isFeatured());
-
-                                    existing.setChallenge(
-                                            seed.getChallenge());
-
-                                    existing.setSolution(
-                                            seed.getSolution());
-
-                                    existing.setImpact(
-                                            seed.getImpact());
-
-                                    projectRepository.save(existing);
-                                },
-
-                                () -> projectRepository.save(seed)
-                        );
-            }
+            seedProjects.stream()
+                    .filter(seed -> !projectRepository.existsByTitleIgnoreCase(seed.getTitle()))
+                    .forEach(projectRepository::save);
 
 
             // =========================
@@ -177,6 +130,7 @@ public class PortfolioApplication {
                         "A practical overview of clean REST API design with Spring Boot.",
                         "Spring Boot makes it straightforward to build maintainable REST APIs. Start with resource-focused controllers, move business rules into services, and keep persistence concerns inside repositories. Validate incoming data at the boundary and return consistent error responses.",
                         LocalDate.of(2026, 8, 20),
+                        "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80",
                         "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80"
                 );
 
@@ -185,6 +139,7 @@ public class PortfolioApplication {
                         "How JPA entities and repositories simplify database access in Java applications.",
                         "Spring Data JPA removes much of the repetitive persistence code. Define an entity that models your table, create a JpaRepository, and let Spring generate common CRUD operations. As the project grows, put domain logic in services and keep controllers thin.",
                         LocalDate.of(2026, 9, 5),
+                        "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80",
                         "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80"
                 );
 
@@ -261,6 +216,7 @@ public class PortfolioApplication {
             String githubUrl,
             String liveDemoUrl,
             String imageUrl,
+            String imageLqipUrl,
             boolean featured,
             List<String> imageUrls,
             String challenge,
@@ -275,6 +231,7 @@ public class PortfolioApplication {
         p.setGithubUrl(githubUrl);
         p.setLiveDemoUrl(liveDemoUrl);
         p.setImageUrl(imageUrl);
+        p.setImageLqipUrl(imageLqipUrl);
         p.setImageUrls(imageUrls);
         p.setFeatured(featured);
         p.setChallenge(challenge);
@@ -294,7 +251,8 @@ public class PortfolioApplication {
             String summary,
             String content,
             LocalDate date,
-            String thumbnailUrl) {
+            String thumbnailUrl,
+            String thumbnailLqipUrl) {
 
         Blog b = new Blog();
 
@@ -303,6 +261,7 @@ public class PortfolioApplication {
         b.setContent(content);
         b.setPublishedDate(date);
         b.setThumbnailUrl(thumbnailUrl);
+        b.setThumbnailLqipUrl(thumbnailLqipUrl);
 
         return b;
     }
