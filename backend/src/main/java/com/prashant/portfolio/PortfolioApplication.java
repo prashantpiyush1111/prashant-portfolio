@@ -69,6 +69,7 @@ public class PortfolioApplication {
                             "https://github.com/prashantpiyush1111/AI-Driven-Sales-Forecasting",
                             "",
                             "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+                            "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
                             true,
                             List.of(
                                     "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80"
@@ -85,6 +86,7 @@ public class PortfolioApplication {
                             "https://github.com/prashantpiyush1111/rag-educational-system",
                             "",
                             "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+                            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
                             true,
                             List.of(
                                     "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80"
@@ -100,6 +102,7 @@ public class PortfolioApplication {
                             "Java, Spring Boot, MySQL, React, JWT",
                             "https://github.com/prashantpiyush1111/task-management-system",
                             "https://workflowpi.online/",
+                            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
                             "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
                             false,
                             List.of(
