@@ -44,10 +44,13 @@ function HomePage() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([api.get('/projects'), api.get('/skills'), api.get('/blogs'), api.get('/achievements')]).then(([p, s, b, a]) => {
-      if (!active) return; setProjects(p.data); setSkills(s.data); setBlogs(b.data); setAchievements(a.data);
-    }).catch(() => {
-      if (!active) return; setProjects(FALLBACK_PROJECTS); setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent }))); setBlogs([]); setAchievements([]);
+    const requests = [api.get('/projects'), api.get('/skills'), api.get('/blogs'), api.get('/achievements')];
+    Promise.allSettled(requests).then(([p, s, b, a]) => {
+      if (!active) return;
+      if (p.status === 'fulfilled') setProjects(p.value.data); else setProjects(FALLBACK_PROJECTS);
+      if (s.status === 'fulfilled') setSkills(s.value.data); else setSkills(FALLBACK_SKILLS.map(([name, category, proficiencyPercent], id) => ({ id, name, category, proficiencyPercent })));
+      if (b.status === 'fulfilled') setBlogs(b.value.data); else setBlogs([]);
+      if (a.status === 'fulfilled') setAchievements(a.value.data); else setAchievements([]);
     }).finally(() => active && setLoading(false));
     api.get('/github/activity').then(({ data }) => active && setGithubActivity(data)).catch(() => {});
     return () => { active = false; };
