@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
+    private static final int CLEANUP_THRESHOLD = 10_000;
+    private static final long CLEANUP_AGE_MS = 3_600_000;
     private final ConcurrentHashMap<String, Long> lastRequestByIp = new ConcurrentHashMap<>();
     private final String[] allowedOrigins;
 
@@ -34,6 +36,7 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
+        cleanupIfNeeded();
         String ip = clientIp(request);
         long now = System.currentTimeMillis();
         Long previous = lastRequestByIp.putIfAbsent(ip, now);
@@ -48,6 +51,12 @@ public class AnalyticsRateLimitFilter extends OncePerRequestFilter {
 
         lastRequestByIp.put(ip, now);
         filterChain.doFilter(request, response);
+    }
+
+    private void cleanupIfNeeded() {
+        if (lastRequestByIp.size() <= CLEANUP_THRESHOLD) return;
+        long cutoff = System.currentTimeMillis() - CLEANUP_AGE_MS;
+        lastRequestByIp.entrySet().removeIf(entry -> entry.getValue() < cutoff);
     }
 
     private void addCorsHeaderIfAllowed(HttpServletRequest request, HttpServletResponse response) {
