@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import { defineConfig } from 'eslint/config';
 
+// React/Vite flat ESLint configuration.
 export default defineConfig([
   {
     ignores: ['dist', 'node_modules'],
