@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import { defineConfig } from 'eslint/config';
 
 // React/Vite flat ESLint configuration.
+// CI runs this config before tests and build.
 export default defineConfig([
   {
     ignores: ['dist', 'node_modules'],
