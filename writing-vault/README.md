@@ -47,3 +47,19 @@ npm run dev
 ```
 
 The existing portfolio remains independent of this application.
+
+## Production checklist
+
+1. Use strong, unique owner credentials; never keep sample defaults.
+2. Set a non-default 4-digit public code and keep it out of source control.
+3. Configure WRITING_CORS_ORIGIN to the exact deployed frontend origin.
+4. Use HTTPS for both deployed frontend and backend.
+5. Configure production MySQL credentials through hosting-provider secrets/environment settings.
+6. The requested 4-digit access model includes rate limiting; for sensitive content, a longer secret or authenticated sharing link is preferable.
+7. Tokens expire after 12 hours and are stored in backend memory, so a backend restart invalidates active sessions.
+
+## Deployment layout
+
+Deploy `writing-backend/` as a separate Spring Boot service and `writing-frontend/` as a separate Vite site. Set the frontend `VITE_WRITING_API` to the deployed backend `/api` URL.
+
+Do not connect this application to the existing portfolio deployment unless that integration is explicitly requested. The two applications are intentionally isolated.
