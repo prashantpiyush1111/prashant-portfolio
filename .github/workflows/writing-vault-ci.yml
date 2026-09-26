@@ -1,0 +1,37 @@
+name: Writing Vault CI
+
+on:
+  push:
+    branches:
+      - writing-vault
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Backend compile and test
+        working-directory: writing-backend
+        run: mvn -B clean verify
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: writing-frontend/package-lock.json
+
+      - name: Frontend install and build
+        working-directory: writing-frontend
+        run: |
+          npm install
+          npm run build
