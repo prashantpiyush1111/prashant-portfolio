@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  "spring.jpa.hibernate.ddl-auto=create-drop",
  "writing.owner.username=test",
  "writing.owner.password=test",
- "writing.public.code=1234"
+ "writing.public.code=1234",
+ "writing.cors.origin=http://localhost:5174"
 })
 class WritingApplicationTest { @Test void contextLoads() {} }
