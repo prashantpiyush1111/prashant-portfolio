@@ -23,6 +23,7 @@ const LazyBlog = lazy(() => import('./components/Blog'));
 const LazyCommandPalette = lazy(() => import('./components/CommandPalette'));
 const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
 const BlogDetails = lazy(() => import('./pages/BlogDetails'));
+const WritingVault = lazy(() => import('./pages/WritingVault'));
 const NAV = ['home', 'about', 'experience', 'skills', 'projects', 'blog', 'contact'];
 const FALLBACK_SKILLS = [
   ['Java', 'Backend', 90], ['Spring Boot', 'Backend', 85], ['Spring Security', 'Backend', 75],
@@ -109,7 +110,7 @@ function AppRoutes() {
     sentPaths.current.add(location.pathname);
     api.post('/analytics/pageview', { path: location.pathname }).catch(() => {});
   }, [location.pathname]);
-  return <AnimatePresence mode="wait" initial={false}><motion.div key={location.pathname} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: .2 }}><Routes location={location}><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><ProjectDetails /></Suspense>} /><Route path="/blog/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><BlogDetails /></Suspense>} /><Route path="*" element={<NotFound />} /></Routes></motion.div></AnimatePresence>;
+  return <AnimatePresence mode="wait" initial={false}><motion.div key={location.pathname} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: .2 }}><Routes location={location}><Route path="/" element={<HomePage />} /><Route path="/projects/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><ProjectDetails /></Suspense>} /><Route path="/blog/:id" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><BlogDetails /></Suspense>} /><Route path="/writing" element={<Suspense fallback={<div className="min-h-screen p-10 text-center">Loading…</div>}><WritingVault /></Suspense>} /><Route path="*" element={<NotFound />} /></Routes></motion.div></AnimatePresence>;
 }
 
 export default function App() { return <AppRoutes />; }
